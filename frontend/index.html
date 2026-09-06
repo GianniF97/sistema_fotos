@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nicolas Techeira - Fotografía & Video</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="hero-section">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="brand-badge"><span>✨</span> Galerías Oficiales</div>
+            <!-- Logo circular del fotógrafo -->
+            <img src="logo.png" alt="Logo Nicolas Techeira" class="hero-logo">
+            <p class="hero-subtitle">Fotografía & Video Profesional</p>
+            <div class="hero-socials">
+                <a href="#" target="_blank"><i class="fab fa-instagram"></i></a>
+                <a href="#" target="_blank"><i class="fab fa-facebook"></i></a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- VISTA 1: Lista de Álbumes -->
+        <section id="vista-eventos">
+            <div class="section-header">
+                <h2>Explora tus Eventos</h2>
+                <p>Selecciona un álbum para ver las fotografías y buscarte por reconocimiento facial.</p>
+            </div>
+            <div id="grid-eventos" class="events-grid">
+                <!-- Se cargan dinámicamente -->
+            </div>
+        </section>
+
+        <!-- VISTA 2: Interior del Álbum -->
+        <section id="vista-busqueda" class="hidden">
+            <button id="btn-volver" class="btn-ghost"><i class="fas fa-arrow-left"></i> Volver a Eventos</button>
+            
+            <div class="album-banner-card">
+                <div>
+                    <h2 id="titulo-evento-seleccionado">Nombre del Evento</h2>
+                    <p id="fecha-evento">Fecha</p>
+                    <span class="price-tag" id="precio-etiqueta">$0 ARS</span>
+                </div>
+                <button id="btn-abrir-modal" class="btn-primary">
+                    <i class="fas fa-camera"></i> Buscarme con IA
+                </button>
+            </div>
+
+            <div class="gallery-section">
+                <h3>Galería de Fotos</h3>
+                <div id="gallery" class="photo-grid">
+                    <!-- Las fotos se cargan aquí -->
+                </div>
+            </div>
+
+            <div class="checkout-bar">
+                <div>
+                    <span>Seleccionadas: <strong id="contador-seleccionadas">0</strong> | Total: </span>
+                    <strong id="precio-total">$0 ARS</strong>
+                </div>
+                <button id="btn-pagar" class="btn-success">Pagar con Mercado Pago</button>
+            </div>
+        </section>
+    </main>
+    <!-- Botón discreto de acceso al Panel de Administración -->
+<a href="http://localhost:8501" target="_blank" class="admin-link-discreto" title="Ir al Panel de Administración">
+    Panel
+</a>
+    <!-- MODAL DE RECONOCIMIENTO FACIAL -->
+    <div id="modal-busqueda" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Reconocimiento Facial</h3>
+                <button id="btn-cerrar-modal" class="close-btn">&times;</button>
+            </div>
+            <p>Sube una fotografía donde tu rostro se vea claro para filtrar únicamente tus momentos.</p>
+            
+            <label class="upload-dropzone">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span>Haz clic o arrastra tu selfie aquí</span>
+                <input type="file" id="input-selfie" accept="image/*" hidden>
+            </label>
+
+            <div id="preview-container" class="hidden preview-box">
+                <img id="selfie-preview" alt="Preview">
+                <span id="nombre-archivo-selfie"></span>
+            </div>
+
+            <div id="loading-msg" class="hidden loading-box">
+                <i class="fas fa-spinner fa-spin"></i> Analizando vectores faciales con IA...
+            </div>
+
+            <div class="modal-actions">
+                <button id="btn-cancelar-modal" class="btn-ghost">Cancelar</button>
+                <button id="btn-ejecutar-busqueda" class="btn-primary" disabled>Iniciar Búsqueda</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE ÉXITO Y ENVÍO DE FOTOS -->
+    <div id="modal-exito" class="modal-overlay hidden">
+        <div class="modal-card success-card">
+            <div class="success-icon">🎉</div>
+            <h3>¡Pago Exitoso!</h3>
+            <p class="modal-desc">Tus fotos están listas. ¿Por dónde prefieres recibirlas?</p>
+            
+            <div class="form-group">
+                <label for="input-contacto">Tu Teléfono (WhatsApp) o Email:</label>
+                <input type="text" id="input-contacto" placeholder="Ej: +5493755... o tu@correo.com" class="input-field">
+            </div>
+
+            <div class="share-buttons-grid">
+                <button id="btn-enviar-whatsapp" class="btn-whatsapp">
+                    <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+                </button>
+                <button id="btn-enviar-email" class="btn-email">
+                    <i class="fas fa-envelope"></i> Enviar por Correo
+                </button>
+            </div>
+
+            <button id="btn-cerrar-exito" class="btn-ghost" style="margin-top: 16px; width: 100%;">Finalizar</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
