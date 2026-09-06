@@ -2,9 +2,9 @@ fastapi
 uvicorn
 supabase
 deepface
-numpy
+tf-keras
+numpy<2.0
+opencv-python-headless
 pillow
 python-dotenv
 mercadopago
-tf-keras
-opencv-python-headless
