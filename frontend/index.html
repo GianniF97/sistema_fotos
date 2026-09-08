@@ -1,132 +1,167 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nicolas Techeira - Fotografía & Video</title>
+    <title>Nicolas Techeira | Fotografia</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts & Lucide Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body>
+<body class="bg-darkBg text-slate-100 min-h-screen selection:bg-indigo-600 selection:text-white">
 
-    <header class="hero-section">
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <div class="brand-badge"><span>✨</span> Galerías Oficiales</div>
-            <!-- Logo circular del fotógrafo -->
-            <img src="logo.png" alt="Logo Nicolas Techeira" class="hero-logo">
-            <p class="hero-subtitle">Fotografía & Video Profesional</p>
-            <div class="hero-socials">
-                <a href="#" target="_blank"><i class="fab fa-instagram"></i></a>
-                <a href="#" target="_blank"><i class="fab fa-facebook"></i></a>
+    <!-- Navbar -->
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-darkBg/80 border-b border-slate-800/80 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3 group cursor-pointer" onclick="app.goHome()">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-all duration-300">
+                    <i data-lucide="camera" class="w-5 h-5 text-white"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Nicolas Techeira</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button onclick="app.openSearchModal()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition-all duration-300 flex items-center space-x-2 border border-slate-700/50 shadow-sm">
+                    <i data-lucide="scan-face" class="w-4 h-4 text-indigo-400"></i>
+                    <span>Buscar por Selfie (IA)</span>
+                </button>
+                <button onclick="app.checkPhotographerAccess()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-white transition-all duration-300 flex items-center space-x-2 border border-slate-700/40">
+                    <i data-lucide="lock" class="w-4 h-4 text-slate-500"></i>
+                    <span>Panel Fotógrafo</span>
+                </button>
             </div>
         </div>
     </header>
 
-    <main class="main-container">
-        <!-- VISTA 1: Lista de Álbumes -->
-        <section id="vista-eventos">
-            <div class="section-header">
-                <h2>Explora tus Eventos</h2>
-                <p>Selecciona un álbum para ver las fotografías y buscarte por reconocimiento facial.</p>
+    <!-- Contenido Principal -->
+    <main class="max-w-7xl mx-auto px-6 py-10">
+        
+        <!-- Hero Section -->
+        <div class="mb-12 text-center md:text-left flex flex-col md:flex-row md:items-center md:justify-between gap-6 animate-fade-in">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">Tus Álbumes y Recuerdos</h1>
+                <p class="text-slate-400 text-sm md:text-base">Encuentra tus fotos al instante con reconocimiento facial de última generación.</p>
             </div>
-            <div id="grid-eventos" class="events-grid">
-                <!-- Se cargan dinámicamente -->
+            <div class="flex items-center justify-center space-x-2 bg-cardBg border border-slate-800 p-1.5 rounded-2xl shadow-inner">
+                <button class="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white shadow-md shadow-indigo-600/30 transition-all duration-300">Todos</button>
+                <button class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all duration-300">Destacados</button>
             </div>
-        </section>
+        </div>
 
-        <!-- VISTA 2: Interior del Álbum -->
-        <section id="vista-busqueda" class="hidden">
-            <button id="btn-volver" class="btn-ghost"><i class="fas fa-arrow-left"></i> Volver a Eventos</button>
-            
-            <div class="album-banner-card">
-                <div>
-                    <h2 id="titulo-evento-seleccionado">Nombre del Evento</h2>
-                    <p id="fecha-evento">Fecha</p>
-                    <span class="price-tag" id="precio-etiqueta">$0 ARS</span>
-                </div>
-                <button id="btn-abrir-modal" class="btn-primary">
-                    <i class="fas fa-camera"></i> Buscarme con IA
-                </button>
-            </div>
+        <!-- Grid de Álbumes -->
+        <div id="albumsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Las tarjetas se inyectan dinámicamente desde el script.js -->
+        </div>
 
-            <div class="gallery-section">
-                <h3>Galería de Fotos</h3>
-                <div id="gallery" class="photo-grid">
-                    <!-- Las fotos se cargan aquí -->
-                </div>
-            </div>
-
-            <div class="checkout-bar">
-                <div>
-                    <span>Seleccionadas: <strong id="contador-seleccionadas">0</strong> | Total: </span>
-                    <strong id="precio-total">$0 ARS</strong>
-                </div>
-                <button id="btn-pagar" class="btn-success">Pagar con Mercado Pago</button>
-            </div>
-        </section>
     </main>
-    <!-- Botón discreto de acceso al Panel de Administración -->
-<a href="http://localhost:8501" target="_blank" class="admin-link-discreto" title="Ir al Panel de Administración">
-    Panel
-</a>
-    <!-- MODAL DE RECONOCIMIENTO FACIAL -->
-    <div id="modal-busqueda" class="modal-overlay hidden">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3>Reconocimiento Facial</h3>
-                <button id="btn-cerrar-modal" class="close-btn">&times;</button>
+
+    <!-- Modal de Autenticación para el Fotógrafo -->
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden animate-fade-in">
+        <div class="bg-cardBg border border-slate-800 rounded-3xl w-full max-w-md p-8 shadow-2xl relative">
+            <button onclick="app.closeAuthModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="w-12 h-12 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 flex items-center justify-center mb-4 text-indigo-400">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
             </div>
-            <p>Sube una fotografía donde tu rostro se vea claro para filtrar únicamente tus momentos.</p>
+            <h3 class="text-xl font-bold text-white mb-2">Acceso Restringido</h3>
+            <p class="text-slate-400 text-xs mb-6">Ingresa la contraseña de administrador para gestionar la subida de fotos.</p>
             
-            <label class="upload-dropzone">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <span>Haz clic o arrastra tu selfie aquí</span>
-                <input type="file" id="input-selfie" accept="image/*" hidden>
-            </label>
+            <form onsubmit="app.verifyPassword(event)" class="space-y-4">
+                <div>
+                    <input type="password" id="adminPassword" placeholder="Contraseña de fotógrafo" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors" required>
+                </div>
+                <button type="submit" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/30 transition-all duration-300">
+                    Validar Acceso
+                </button>
+            </form>
+        </div>
+    </div>
 
-            <div id="preview-container" class="hidden preview-box">
-                <img id="selfie-preview" alt="Preview">
-                <span id="nombre-archivo-selfie"></span>
+    <!-- Modal del Panel del Fotógrafo (Creación y Gestión) -->
+    <div id="uploadModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden animate-fade-in">
+        <div class="bg-cardBg border border-slate-800 rounded-3xl w-full max-w-2xl p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="app.closeUploadModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-xl font-bold text-white mb-2">Panel de Administración - Fotógrafo</h3>
+            <p class="text-slate-400 text-xs mb-6">Sube nuevos eventos o administra los álbumes existentes.</p>
+            
+            <!-- Pestañas de Navegación del Panel -->
+            <div class="flex space-x-2 border-b border-slate-800 pb-4 mb-6">
+                <button type="button" onclick="app.switchTab('create')" id="tabCreateBtn" class="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white transition-all">Crear Nuevo Álbum</button>
+                <button type="button" onclick="app.switchTab('manage')" id="tabManageBtn" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-all">Gestionar / Borrar Álbumes</button>
             </div>
 
-            <div id="loading-msg" class="hidden loading-box">
-                <i class="fas fa-spinner fa-spin"></i> Analizando vectores faciales con IA...
+            <!-- Vista 1: Crear Álbum -->
+            <div id="viewCreate" class="space-y-4">
+                <form id="uploadForm" onsubmit="app.handleCreateAlbumAndUpload(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre del Álbum / Evento</label>
+                        <input type="text" id="albumTitle" placeholder="Ej: Casamiento Julieta & Lucas" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Fecha del Evento</label>
+                        <input type="text" id="albumDate" placeholder="Ej: 15 de Septiembre, 2026" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Imagen de Portada del Álbum</label>
+                        <input type="file" id="coverFile" accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 file:cursor-pointer" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Fotografías del Álbum (Múltiples)</label>
+                        <input type="file" id="photosFiles" accept="image/*" multiple class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700 file:cursor-pointer" required>
+                    </div>
+
+                    <button type="submit" class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/30 transition-all duration-300 flex items-center justify-center space-x-2 mt-4">
+                        <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                        <span>Crear Álbum y Subir Fotos</span>
+                    </button>
+                </form>
             </div>
 
-            <div class="modal-actions">
-                <button id="btn-cancelar-modal" class="btn-ghost">Cancelar</button>
-                <button id="btn-ejecutar-busqueda" class="btn-primary" disabled>Iniciar Búsqueda</button>
+            <!-- Vista 2: Gestionar / Borrar Álbumes -->
+            <div id="viewManage" class="space-y-4 hidden">
+                <div id="adminAlbumsList" class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                    <!-- Los álbumes se cargan dinámicamente aquí -->
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL DE ÉXITO Y ENVÍO DE FOTOS -->
-    <div id="modal-exito" class="modal-overlay hidden">
-        <div class="modal-card success-card">
-            <div class="success-icon">🎉</div>
-            <h3>¡Pago Exitoso!</h3>
-            <p class="modal-desc">Tus fotos están listas. ¿Por dónde prefieres recibirlas?</p>
+    <!-- Modal de Búsqueda por Reconocimiento Facial -->
+    <div id="searchModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden animate-fade-in">
+        <div class="bg-cardBg border border-slate-800 rounded-3xl w-full max-w-lg p-8 shadow-2xl relative">
+            <button onclick="app.closeSearchModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-xl font-bold text-white mb-2">Búsqueda Facial Inteligente</h3>
+            <p class="text-slate-400 text-xs mb-6">Sube una selfie tuya para encontrar tus fotos.</p>
             
-            <div class="form-group">
-                <label for="input-contacto">Tu Teléfono (WhatsApp) o Email:</label>
-                <input type="text" id="input-contacto" placeholder="Ej: +5493755... o tu@correo.com" class="input-field">
-            </div>
-
-            <div class="share-buttons-grid">
-                <button id="btn-enviar-whatsapp" class="btn-whatsapp">
-                    <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+            <form id="searchForm" onsubmit="app.handleFaceSearch(event)" class="space-y-5">
+                <div class="border-2 border-dashed border-slate-700/60 hover:border-indigo-500/80 rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 group bg-slate-900/40">
+                    <input type="file" id="selfieFile" accept="image/*" class="hidden" required onchange="app.previewSelfieName(this)">
+                    <label for="selfieFile" class="cursor-pointer flex flex-col items-center">
+                        <div class="w-12 h-12 rounded-full bg-slate-800 group-hover:bg-indigo-600/20 group-hover:scale-110 transition-all duration-300 flex items-center justify-center mb-3">
+                            <i data-lucide="user-check" class="w-6 h-6 text-indigo-400"></i>
+                        </div>
+                        <span id="selfieLabelText" class="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">Sube tu selfie de referencia</span>
+                    </label>
+                </div>
+                <button type="submit" class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/30 transition-all duration-300 flex items-center justify-center space-x-2">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    <span>Buscar mis fotos con IA</span>
                 </button>
-                <button id="btn-enviar-email" class="btn-email">
-                    <i class="fas fa-envelope"></i> Enviar por Correo
-                </button>
-            </div>
-
-            <button id="btn-cerrar-exito" class="btn-ghost" style="margin-top: 16px; width: 100%;">Finalizar</button>
+            </form>
         </div>
     </div>
 
+    <!-- Script principal -->
     <script src="script.js"></script>
 </body>
 </html>

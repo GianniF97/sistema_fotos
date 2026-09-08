@@ -1,19 +1,14 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File
-from fastapi.middleware.cors import CORSMiddleware
-from supabase import create_client
-from deepface import DeepFace
-import numpy as np
-from PIL import Image
-import io
-import json
+# main.py (Backend FastAPI completo con Cloudflare R2, Supabase y autenticación segura de admin)
 import os
-from pydantic import BaseModel
+import boto3
 from typing import List
-from dotenv import load_dotenv
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from supabase import create_client, Client
+from botocore.exceptions import ClientError
 
-load_dotenv()
-
-app = FastAPI()
+app = FastAPI(title="PixelFlow Backend", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,123 +18,104 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+# Inicializar Supabase
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Configurar cliente S3 para Cloudflare R2
+s3_client = boto3.client(
+    's3',
+    endpoint_url=f"https://{os.environ.get('CLOUDFLARE_ACCOUNT_ID')}.r2.cloudflarestorage.com",
+    aws_access_key_id=os.environ.get('R2_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.environ.get('R2_SECRET_ACCESS_KEY'),
+    region_name='auto'
+)
+BUCKET_NAME = os.environ.get('R2_BUCKET_NAME', 'sistema-fotos')
 
-@app.get("/api/eventos")
-async def obtener_eventos():
+def upload_image_to_r2(file_obj, file_name: str, content_type: str) -> str:
     try:
-        response = supabase.table("eventos").select("*").execute()
-        return {"status": "success", "eventos": response.data}
+        s3_client.upload_fileobj(
+            file_obj,
+            BUCKET_NAME,
+            file_name,
+            ExtraArgs={'ContentType': content_type}
+        )
+        public_url = f"{os.environ.get('R2_PUBLIC_URL')}/{file_name}"
+        return public_url
+    except ClientError as e:
+        raise Exception(f"Error al subir a Cloudflare R2: {e}")
+
+class AdminAuth(BaseModel):
+    password: str
+
+@app.post("/api/admin/verify")
+def verify_admin_password(auth: AdminAuth):
+    expected_password = os.environ.get("ADMIN_PASSWORD", "fotografo2026")
+    if auth.password == expected_password:
+        return {"success": True, "message": "Acceso autorizado"}
+    else:
+        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+
+@app.get("/api/albums")
+def get_albums():
+    try:
+        response = supabase.table("albums").select("*").execute()
+        return response.data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+@app.delete("/api/albums/{album_id}")
+def delete_album(album_id: int):
+    try:
+        # 1. Opcional: Buscar las fotos vinculadas si deseas borrarlas físicamente de R2
+        photos_res = supabase.table("photos").select("url").eq("album_id", album_id).execute()
+        
+        # 2. Borrar registros de fotos en Supabase
+        supabase.table("photos").delete().eq("album_id", album_id).execute()
+        
+        # 3. Borrar el álbum en Supabase
+        res = supabase.table("albums").delete().eq("id", album_id).execute()
+
+        return {"success": True, "message": "Álbum eliminado correctamente"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/evento/{evento_id}/fotos")
-async def obtener_fotos_evento(evento_id: str):
+@app.post("/api/albums/create")
+async def create_album(
+    title: str,
+    date: str,
+    cover: UploadFile = File(...),
+    photos: List[UploadFile] = File(...)
+):
     try:
-        response = supabase.table("fotos").select("id, url_preview, precio").eq("evento_id", evento_id).execute()
-        return {"status": "success", "fotos": response.data}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        cover_filename = f"covers/{title.lower().replace(' ', '_')}_{cover.filename}"
+        cover_url = upload_image_to_r2(cover.file, cover_filename, cover.content_type)
 
-@app.post("/api/evento/{evento_id}/buscar-rostro")
-async def buscar_rostro(evento_id: str, selfie: UploadFile = File(...)):
-    try:
-        contents = await selfie.read()
-        image_pil = Image.open(io.BytesIO(contents)).convert('RGB')
-        img_np = np.array(image_pil)
-
-        representaciones = DeepFace.represent(img_np, model_name="ArcFace", detector_backend="mtcnn", enforce_detection=True)
-        
-        if not representaciones or "embedding" not in representaciones[0]:
-            raise HTTPException(status_code=400, detail="No se pudo detectar un rostro claro en la selfie.")
-        
-        vector_selfie = np.array(representaciones[0]["embedding"])
-
-        response = supabase.table("fotos").select("id, url_preview, precio, vector_rostro").eq("evento_id", evento_id).execute()
-        fotos = response.data
-
-        if not fotos:
-            return {"status": "success", "fotos": []}
-
-        fotos_coincidentes = []
-        for foto in fotos:
-            vector_foto = foto.get("vector_rostro")
-            if vector_foto:
-                if isinstance(vector_foto, str):
-                    v_foto = np.array(json.loads(vector_foto))
-                else:
-                    v_foto = np.array(vector_foto)
-                
-                if len(v_foto) == len(vector_selfie) and np.any(v_foto) and not np.all(v_foto == 0):
-                    norm_selfie = np.linalg.norm(vector_selfie)
-                    norm_foto = np.linalg.norm(v_foto)
-                    
-                    if norm_selfie > 0 and norm_foto > 0:
-                        cosine_similarity = np.dot(vector_selfie, v_foto) / (norm_selfie * norm_foto)
-                        print(f"Similitud ArcFace para foto {foto['id']}: {cosine_similarity}")
-                        
-                        # Umbral flexible optimizado para pruebas fluidas
-                        if cosine_similarity > 0.05:
-                            fotos_coincidentes.append({
-                                "id": foto["id"],
-                                "url_preview": foto["url_preview"],
-                                "precio": foto["precio"]
-                            })
-
-        return {"status": "success", "fotos": fotos_coincidentes}
-
-    except Exception as e:
-        print("ERROR EN BUSCAR ROSTRO:", str(e))
-        raise HTTPException(status_code=500, detail=str(e))
-
-# Modelos para la pasarela de pagos
-class ItemCarrito(BaseModel):
-    titulo: str
-    precio: float
-
-class SolicitudPago(BaseModel):
-    items: List[ItemCarrito]
-
-@app.post("/api/generar-pago")
-async def generar_pago(solicitud: SolicitudPago):
-    try:
-        import mercadopago
-        mp_token = os.getenv("MERCADOPAGO_TOKEN", "TEST-tu-access-token-de-mercadopago")
-        sdk = mercadopago.SDK(mp_token) 
-        
-        items_mp = []
-        for item in solicitud.items:
-            items_mp.append({
-                "title": item.titulo,
-                "quantity": 1,
-                "unit_price": float(item.precio)
-            })
-
-        if not items_mp:
-            raise HTTPException(status_code=400, detail="No hay ítems seleccionados para el pago.")
-
-        preference_data = {
-            "items": items_mp,
-            "back_urls": {
-                "success": "http://127.0.0.1:5500/index.html",
-                "failure": "http://127.0.0.1:5500/index.html",
-                "pending": "http://127.0.0.1:5500/index.html"
-            },
-            "auto_return": "approved",
+        album_data = {
+            "title": title,
+            "date": date,
+            "image_url": cover_url,
+            "photo_count": len(photos)
         }
+        album_res = supabase.table("albums").insert(album_data).execute()
+        
+        if not album_res.data:
+            raise HTTPException(status_code=500, detail="No se pudo registrar el álbum en Supabase.")
+        
+        album_id = album_res.data[0]["id"]
 
-        preference_response = sdk.preference().create(preference_data)
-        preference = preference_response.get("response", {})
-        init_point = preference.get("init_point")
-
-        if init_point:
-            return {"status": "success", "url_pago": init_point}
-        else:
-            raise Exception("No se pudo generar el link de pago en Mercado Pago.")
+        for photo in photos:
+            photo_filename = f"events/{album_id}/{photo.filename}"
+            photo_url = upload_image_to_r2(photo.file, photo_filename, photo.content_type)
             
+            supabase.table("photos").insert({
+                "album_id": album_id,
+                "url": photo_url
+            }).execute()
+
+        return {
+            "success": True,
+            "message": f"Álbum '{title}' creado con éxito y {len(photos)} fotos subidas a R2."
+        }
     except Exception as e:
-        print("ERROR EN MERCADOPAGO:", str(e))
-        return {"status": "success", "url_pago": "https://www.mercadopago.com.ar"}
+        raise HTTPException(status_code=500, detail=str(e))
