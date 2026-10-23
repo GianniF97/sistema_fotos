@@ -1,167 +1,833 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="es" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nicolas Techeira | Fotografia</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="style.css">
-    <!-- Google Fonts & Lucide Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-</head>
-<body class="bg-darkBg text-slate-100 min-h-screen selection:bg-indigo-600 selection:text-white">
+    <title>Nicolas Techeira Fotografías</title>
+    <meta name="description" content="Portfolio fotográfico y archivo visual por Nicolas Techeira. Historias que merecen ser recordadas. Fotografía editorial contemporánea y cobertura de eventos en Oberá, Misiones.">
+    <meta name="author" content="Nicolas Techeira">
+    <meta property="og:title" content="Nicolas Techeira Fotografías">
+    <meta property="og:description" content="Historias que merecen ser recordadas. Portfolio fotográfico y archivo visual.">
+    <meta property="og:type" content="website">
+    
+    <!-- Favicon SVG Monogram NT -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none'%3E%3Crect width='48' height='48' rx='8' fill='%23111110'/%3E%3Cpath d='M12 36V12L24 28V12' stroke='%23F5F2EC' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M26 12H40M33 12V36' stroke='%23A88B67' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
-    <!-- Navbar -->
-    <header class="sticky top-0 z-50 backdrop-blur-md bg-darkBg/80 border-b border-slate-800/80 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <div class="flex items-center space-x-3 group cursor-pointer" onclick="app.goHome()">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-all duration-300">
-                    <i data-lucide="camera" class="w-5 h-5 text-white"></i>
+    <!-- Tailwind CSS CDN with Custom Design Tokens -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        carbon: '#111110',
+                        warmwhite: '#F5F2EC',
+                        stone: {
+                            DEFAULT: '#A5A19A',
+                            light: '#C5C1BA',
+                            dark: '#68655F'
+                        },
+                        darkstone: '#292927',
+                        bronze: {
+                            DEFAULT: '#A88B67',
+                            light: '#C4A782',
+                            dark: '#846B4E'
+                        }
+                    },
+                    fontFamily: {
+                        editorial: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"Space Mono"', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- QRCode library for share modal -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body class="bg-warmwhite dark:bg-carbon text-carbon dark:text-warmwhite min-h-screen transition-colors duration-300 relative selection:bg-bronze selection:text-white">
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" aria-live="polite"></div>
+
+    <!-- ========================================== -->
+    <!-- 1. ENCABEZADO EDITORIAL MINIMALISTA        -->
+    <!-- ========================================== -->
+    <header id="mainHeader" class="sticky top-0 z-40 backdrop-blur-md bg-warmwhite/90 dark:bg-carbon/90 border-b border-carbon/10 dark:border-warmwhite/10 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-8 h-20 sm:h-24 flex items-center justify-between">
+            
+            <!-- Left: Identidad de Marca y Monograma NT -->
+            <a href="#/" class="flex items-center space-x-3.5 group" title="Nicolas Techeira Fotografías">
+                <div class="monogram-badge" aria-hidden="true">
+                    <span>NT</span>
                 </div>
-                <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Nicolas Techeira</span>
-            </div>
-            <div class="flex items-center space-x-4">
-                <button onclick="app.openSearchModal()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition-all duration-300 flex items-center space-x-2 border border-slate-700/50 shadow-sm">
-                    <i data-lucide="scan-face" class="w-4 h-4 text-indigo-400"></i>
-                    <span>Buscar por Selfie (IA)</span>
+                <div class="flex flex-col">
+                    <span class="brand-logotype text-xl sm:text-2xl text-carbon dark:text-warmwhite group-hover:text-bronze transition-colors">
+                        Nicolas Techeira
+                    </span>
+                    <span class="brand-descriptor">
+                        Fotografías
+                    </span>
+                </div>
+            </a>
+
+            <!-- Center/Right Navigation -->
+            <nav class="hidden md:flex items-center space-x-8" aria-label="Navegación principal">
+                <a href="#/" class="font-mono text-xs tracking-widest text-carbon dark:text-warmwhite hover:text-bronze dark:hover:text-bronze-light uppercase transition-colors">
+                    Colecciones
+                </a>
+                <a href="https://instagram.com/nicolastecheira" target="_blank" rel="noopener noreferrer" class="font-mono text-xs tracking-widest text-stone-dark dark:text-stone hover:text-carbon dark:hover:text-warmwhite uppercase transition-colors flex items-center space-x-1.5">
+                    <span>Instagram</span>
+                    <i data-lucide="arrow-up-right" class="w-3 h-3 text-bronze"></i>
+                </a>
+            </nav>
+
+            <!-- Right Controls: Carrito, Tema, Acceso Estudio -->
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                
+                <!-- Botón Carrito en Cabecera -->
+                <button id="headerCartBtn" onclick="app.openCartModal()" class="hidden px-3.5 py-1.5 rounded-sm text-xs font-mono font-bold bg-carbon dark:bg-warmwhite text-warmwhite dark:text-carbon hover:bg-bronze dark:hover:bg-bronze transition-all flex items-center space-x-2 shadow-sm" aria-label="Ver carrito de fotos">
+                    <i data-lucide="shopping-bag" class="w-3.5 h-3.5 text-bronze"></i>
+                    <span class="hidden sm:inline">Carrito</span>
+                    <span id="headerCartBadge" class="bg-bronze text-white text-[10px] px-1.5 py-0.2 rounded-full font-sans">0</span>
                 </button>
-                <button onclick="app.checkPhotographerAccess()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-white transition-all duration-300 flex items-center space-x-2 border border-slate-700/40">
-                    <i data-lucide="lock" class="w-4 h-4 text-slate-500"></i>
-                    <span>Panel Fotógrafo</span>
+
+                <!-- Toggle Tema Claro/Oscuro -->
+                <button id="themeToggleBtn" onclick="app.toggleTheme()" class="min-touch-target p-2 rounded-sm text-carbon dark:text-warmwhite hover:bg-carbon/5 dark:hover:bg-warmwhite/5 transition-colors" title="Cambiar tema claro / oscuro" aria-label="Alternar tema">
+                    <i id="themeIcon" data-lucide="moon" class="w-4 h-4 text-bronze"></i>
                 </button>
+
+                <!-- Acceso Estudio / Fotógrafo -->
+                <a href="#/admin/login" id="btnAdminAccess" class="px-3.5 sm:px-4 py-2 border border-carbon/20 dark:border-warmwhite/20 hover:border-bronze dark:hover:border-bronze text-carbon dark:text-warmwhite hover:text-bronze dark:hover:text-bronze text-xs font-mono tracking-wider uppercase transition-all duration-200 flex items-center space-x-2" title="Acceso al panel administrativo">
+                    <span class="w-1.5 h-1.5 rounded-full bg-bronze"></span>
+                    <span class="hidden sm:inline">Estudio</span>
+                    <span class="sm:hidden">Admin</span>
+                </a>
+
             </div>
+
         </div>
     </header>
 
-    <!-- Contenido Principal -->
-    <main class="max-w-7xl mx-auto px-6 py-10">
-        
-        <!-- Hero Section -->
-        <div class="mb-12 text-center md:text-left flex flex-col md:flex-row md:items-center md:justify-between gap-6 animate-fade-in">
-            <div>
-                <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">Tus Álbumes y Recuerdos</h1>
-                <p class="text-slate-400 text-sm md:text-base">Encuentra tus fotos al instante con reconocimiento facial de última generación.</p>
-            </div>
-            <div class="flex items-center justify-center space-x-2 bg-cardBg border border-slate-800 p-1.5 rounded-2xl shadow-inner">
-                <button class="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white shadow-md shadow-indigo-600/30 transition-all duration-300">Todos</button>
-                <button class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all duration-300">Destacados</button>
-            </div>
-        </div>
+    <!-- ========================================== -->
+    <!-- 2. VISTA PÚBLICA: PORTAFOLIO EDITORIAL     -->
+    <!-- ========================================== -->
+    <main id="viewPublicPortfolio" class="relative pb-28">
+        <!-- Ambient Editorial Background Glow -->
+        <div id="ambientBackground" class="editorial-ambient-bg" style="background-image: url('https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80&w=1200');"></div>
 
-        <!-- Grid de Álbumes -->
-        <div id="albumsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Las tarjetas se inyectan dinámicamente desde el script.js -->
-        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-8 pt-10 sm:pt-16 relative z-10">
+            
+            <!-- HERO PRINCIPAL EDITORIAL -->
+            <section class="mb-16 sm:mb-24" aria-label="Presentación editorial">
+                
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-end mb-8">
+                    
+                    <!-- Headline & Art Direction Text -->
+                    <div class="lg:col-span-7 space-y-4">
+                        <div class="flex items-center space-x-3">
+                            <span class="editorial-bronze-line"></span>
+                            <span class="font-mono text-xs tracking-[0.25em] text-bronze uppercase font-bold">
+                                Archivo Fotográfico
+                            </span>
+                        </div>
 
+                        <h1 class="font-editorial text-4xl sm:text-6xl md:text-7xl font-normal tracking-tight text-carbon dark:text-warmwhite leading-[1.05]">
+                            Nicolas Techeira <br>
+                            <span class="italic font-light text-stone-dark dark:text-stone">Fotografías</span>
+                        </h1>
+
+                        <p class="font-editorial italic text-xl sm:text-2xl text-stone-dark dark:text-stone max-w-xl pt-1">
+                            “Historias que merecen ser recordadas.”
+                        </p>
+
+                        <div class="pt-4 flex flex-wrap items-center gap-4 text-xs font-mono text-stone-dark dark:text-stone">
+                            <span class="flex items-center space-x-1.5">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-bronze"></i>
+                                <span>Oberá, Misiones</span>
+                            </span>
+                            <span>•</span>
+                            <span>Eventos & Ballet</span>
+                            <span>•</span>
+                            <a href="#albumsSection" class="text-carbon dark:text-warmwhite font-bold hover:text-bronze underline decoration-bronze underline-offset-4 transition-colors">
+                                Explorar Colecciones ↓
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Micro-Perfil & Acciones -->
+                    <div class="lg:col-span-5 flex flex-col justify-end items-start lg:items-end space-y-4">
+                        <div class="flex items-center space-x-3 border-l-2 lg:border-l-0 lg:border-r-2 border-bronze pl-4 lg:pl-0 lg:pr-4 py-1">
+                            <div class="text-left lg:text-right">
+                                <span class="block font-mono text-xs text-bronze tracking-wider uppercase">Cobertura Oficial</span>
+                                <span class="block font-sans text-xs text-stone-dark dark:text-stone">Descarga digital en alta resolución</span>
+                            </div>
+                        </div>
+
+                        <!-- Botones de Enlace Rápido -->
+                        <div class="flex items-center space-x-2">
+                            <button onclick="app.openQrModal()" class="px-3.5 py-2 border border-carbon/15 dark:border-warmwhite/15 hover:border-bronze text-carbon dark:text-warmwhite text-xs font-mono flex items-center space-x-2 transition-colors" title="Ver código QR para compartir">
+                                <i data-lucide="qr-code" class="w-3.5 h-3.5 text-bronze"></i>
+                                <span>Compartir</span>
+                            </button>
+                            <button onclick="app.copyProfileLink()" class="px-3.5 py-2 border border-carbon/15 dark:border-warmwhite/15 hover:border-bronze text-carbon dark:text-warmwhite text-xs font-mono flex items-center space-x-2 transition-colors" title="Copiar enlace del catálogo">
+                                <i data-lucide="copy" class="w-3.5 h-3.5 text-bronze"></i>
+                                <span>Copiar Enlace</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Hero Large Featured Visual Frame -->
+                <div class="editorial-hero-frame aspect-[16/9] sm:aspect-[21/9] w-full max-h-[460px] relative">
+                    <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=85&w=1800" 
+                         alt="Nicolas Techeira Fotografías - Composición Editorial" 
+                         class="w-full h-full object-cover object-center filter brightness-[0.92] dark:brightness-[0.85] contrast-[1.05]">
+                    
+                    <!-- Overlay sutil con sello tipográfico -->
+                    <div class="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-10 bg-warmwhite/90 dark:bg-carbon/90 backdrop-blur-md px-4 py-2 border border-carbon/10 dark:border-warmwhite/10">
+                        <span class="font-mono text-[10px] tracking-[0.2em] text-bronze uppercase block">Edición Especial</span>
+                        <span class="font-editorial text-sm sm:text-base text-carbon dark:text-warmwhite font-medium">Tradición, Arte y Danza en Movimiento</span>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- SECCIÓN DE COLECCIONES Y ÁLBUMES -->
+            <section id="albumsSection" aria-label="Colecciones fotográficas">
+                
+                <!-- Header de Sección y Filtros Editoriales -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between border-b border-carbon/10 dark:border-warmwhite/10 pb-4 mb-10 gap-4">
+                    <div>
+                        <span class="font-mono text-xs text-bronze tracking-[0.25em] uppercase font-bold block mb-1">
+                            Catálogo
+                        </span>
+                        <h2 class="font-editorial text-3xl sm:text-4xl text-carbon dark:text-warmwhite font-normal">
+                            Colecciones Publicadas
+                        </h2>
+                    </div>
+
+                    <!-- Píldoras de Categoría Minimalistas -->
+                    <div class="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none" id="categoryFilters">
+                        <button onclick="app.filterByCategory('all')" data-category="all" class="category-tab-editorial active">
+                            Todos
+                        </button>
+                        <button onclick="app.filterByCategory('Fiestas')" data-category="Fiestas" class="category-tab-editorial">
+                            Fiestas
+                        </button>
+                        <button onclick="app.filterByCategory('Ballet')" data-category="Ballet" class="category-tab-editorial">
+                            Ballet
+                        </button>
+                        <button onclick="app.filterByCategory('Eventos')" data-category="Eventos" class="category-tab-editorial">
+                            Eventos
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Grid de Álbumes Renderizados Dinámicamente -->
+                <div id="albumsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
+                    <!-- Dynamic Album Cards rendered by script.js -->
+                </div>
+
+            </section>
+
+        </div>
     </main>
 
-    <!-- Modal de Autenticación para el Fotógrafo -->
-    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden animate-fade-in">
-        <div class="bg-cardBg border border-slate-800 rounded-3xl w-full max-w-md p-8 shadow-2xl relative">
-            <button onclick="app.closeAuthModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors">
+    <!-- ========================================== -->
+    <!-- 3. VISTA PÚBLICA: DETALLE DEL ÁLBUM       -->
+    <!-- ========================================== -->
+    <main id="viewAlbumDetails" class="hidden relative pb-32">
+        <div class="max-w-7xl mx-auto px-4 sm:px-8 pt-6 sm:pt-10">
+            
+            <!-- Botón Volver Minimalista -->
+            <div class="mb-8">
+                <button onclick="app.goHome()" class="inline-flex items-center space-x-2 font-mono text-xs tracking-wider uppercase text-stone-dark dark:text-stone hover:text-bronze transition-colors py-2">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    <span>Volver a Colecciones</span>
+                </button>
+            </div>
+
+            <!-- Cabecera Editorial del Álbum -->
+            <div id="albumHeaderCard" class="bg-white dark:bg-card border border-carbon/10 dark:border-warmwhite/10 p-6 sm:p-10 mb-12 shadow-sm animate-fade-in">
+                <!-- Injected dynamically by script.js -->
+            </div>
+
+            <!-- Banner de Filtro Facial Activo -->
+            <div id="faceSearchBanner" class="hidden mb-8 p-5 bg-carbon/5 dark:bg-warmwhite/5 border border-bronze/40 flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in">
+                <div class="flex items-center space-x-3 text-carbon dark:text-warmwhite text-sm">
+                    <i data-lucide="sparkles" class="w-5 h-5 text-bronze flex-shrink-0"></i>
+                    <span>Mostrando fotografías coincidentes con tu búsqueda facial.</span>
+                </div>
+                <button onclick="app.clearFaceSearchFilter()" class="btn-editorial-secondary text-xs">
+                    Ver todas las fotos del álbum
+                </button>
+            </div>
+
+            <!-- Galería Fotográfica Inmersiva -->
+            <div id="albumPhotosGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                <!-- Dynamic photos rendered by script.js -->
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- 4. VISTA PRIVADA: LOGIN DE ADMINISTRADOR   -->
+    <!-- ========================================== -->
+    <main id="viewAdminLogin" class="hidden min-h-[85vh] flex items-center justify-center px-4 py-16">
+        <div class="w-full max-w-md bg-white dark:bg-darkstone border border-carbon/15 dark:border-warmwhite/15 p-8 sm:p-10 shadow-2xl relative animate-slide-up">
+            
+            <!-- Botón Salir -->
+            <button onclick="app.goHome()" class="absolute top-6 right-6 text-stone hover:text-carbon dark:hover:text-warmwhite transition-colors" title="Volver al inicio" aria-label="Cerrar">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
-            <div class="w-12 h-12 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 flex items-center justify-center mb-4 text-indigo-400">
-                <i data-lucide="shield-check" class="w-6 h-6"></i>
+
+            <!-- Sello de Marca NT -->
+            <div class="w-12 h-12 border border-bronze bg-bronze/10 text-bronze flex items-center justify-center mb-6 font-editorial font-bold text-xl">
+                <span>NT</span>
             </div>
-            <h3 class="text-xl font-bold text-white mb-2">Acceso Restringido</h3>
-            <p class="text-slate-400 text-xs mb-6">Ingresa la contraseña de administrador para gestionar la subida de fotos.</p>
-            
-            <form onsubmit="app.verifyPassword(event)" class="space-y-4">
+
+            <!-- Encabezado de Login -->
+            <div id="loginHeaderNormal">
+                <span class="font-mono text-[10px] tracking-widest text-bronze uppercase block mb-1">Acceso Exclusivo</span>
+                <h2 class="font-editorial text-2xl sm:text-3xl font-medium text-carbon dark:text-warmwhite mb-2">Panel del Fotógrafo</h2>
+                <p class="text-stone-dark dark:text-stone text-xs sm:text-sm mb-6">Ingresa tus credenciales de estudio para administrar álbumes y fotografías.</p>
+            </div>
+
+            <div id="loginHeaderSetup" class="hidden">
+                <div class="inline-flex items-center space-x-1.5 px-3 py-1 bg-bronze/15 text-bronze border border-bronze/30 mb-3 font-mono text-xs">
+                    <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
+                    <span>Configuración Inicial</span>
+                </div>
+                <h2 class="font-editorial text-2xl sm:text-3xl font-medium text-carbon dark:text-warmwhite mb-2">Crear Cuenta Principal</h2>
+                <p class="text-stone-dark dark:text-stone text-xs sm:text-sm mb-6">Registra tu usuario principal de fotógrafo con contraseña protegida por encriptación SHA-256.</p>
+            </div>
+
+            <!-- Mensaje de Error -->
+            <div id="loginErrorMsg" class="hidden mb-4 p-3 bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs flex items-center space-x-2">
+                <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+                <span id="loginErrorText"></span>
+            </div>
+
+            <!-- Formulario de Login -->
+            <form id="adminLoginForm" onsubmit="app.handleAdminAuth(event)" class="space-y-4">
+                
+                <div id="setupNameGroup" class="hidden">
+                    <label for="adminNameInput" class="block font-mono text-xs uppercase text-stone-dark dark:text-stone mb-1">Nombre Completo</label>
+                    <input type="text" id="adminNameInput" placeholder="Nicolas Techeira" class="w-full px-4 py-3 bg-warmwhite dark:bg-carbon border border-carbon/20 dark:border-warmwhite/20 text-carbon dark:text-warmwhite text-sm focus:outline-none focus:border-bronze">
+                </div>
+
                 <div>
-                    <input type="password" id="adminPassword" placeholder="Contraseña de fotógrafo" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors" required>
+                    <label for="adminEmailInput" class="block font-mono text-xs uppercase text-stone-dark dark:text-stone mb-1">Correo Electrónico</label>
+                    <input type="email" id="adminEmailInput" placeholder="estudio@nicolastecheira.com" required class="w-full px-4 py-3 bg-warmwhite dark:bg-carbon border border-carbon/20 dark:border-warmwhite/20 text-carbon dark:text-warmwhite text-sm focus:outline-none focus:border-bronze">
                 </div>
-                <button type="submit" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/30 transition-all duration-300">
-                    Validar Acceso
+
+                <div>
+                    <label for="adminPassInput" class="block font-mono text-xs uppercase text-stone-dark dark:text-stone mb-1">Contraseña</label>
+                    <div class="relative">
+                        <input type="password" id="adminPassInput" placeholder="••••••••" required class="w-full px-4 py-3 bg-warmwhite dark:bg-carbon border border-carbon/20 dark:border-warmwhite/20 text-carbon dark:text-warmwhite text-sm focus:outline-none focus:border-bronze pr-10">
+                        <button type="button" onclick="app.togglePasswordVisibility('adminPassInput')" class="absolute right-3 top-3 text-stone hover:text-carbon dark:hover:text-warmwhite" title="Mostrar contraseña">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="setupConfirmPassGroup" class="hidden">
+                    <label for="adminPassConfirmInput" class="block font-mono text-xs uppercase text-stone-dark dark:text-stone mb-1">Confirmar Contraseña</label>
+                    <input type="password" id="adminPassConfirmInput" placeholder="••••••••" class="w-full px-4 py-3 bg-warmwhite dark:bg-carbon border border-carbon/20 dark:border-warmwhite/20 text-carbon dark:text-warmwhite text-sm focus:outline-none focus:border-bronze">
+                </div>
+
+                <button type="submit" id="loginSubmitBtn" class="btn-editorial-primary w-full py-3.5 mt-2">
+                    <span id="loginBtnText">Iniciar Sesión</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
                 </button>
             </form>
+
         </div>
-    </div>
+    </main>
 
-    <!-- Modal del Panel del Fotógrafo (Creación y Gestión) -->
-    <div id="uploadModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden animate-fade-in">
-        <div class="bg-cardBg border border-slate-800 rounded-3xl w-full max-w-2xl p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <button onclick="app.closeUploadModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            <h3 class="text-xl font-bold text-white mb-2">Panel de Administración - Fotógrafo</h3>
-            <p class="text-slate-400 text-xs mb-6">Sube nuevos eventos o administra los álbumes existentes.</p>
-            
-            <!-- Pestañas de Navegación del Panel -->
-            <div class="flex space-x-2 border-b border-slate-800 pb-4 mb-6">
-                <button type="button" onclick="app.switchTab('create')" id="tabCreateBtn" class="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white transition-all">Crear Nuevo Álbum</button>
-                <button type="button" onclick="app.switchTab('manage')" id="tabManageBtn" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-all">Gestionar / Borrar Álbumes</button>
-            </div>
+    <!-- ========================================== -->
+    <!-- 5. VISTA PRIVADA: DASHBOARD CMS            -->
+    <!-- ========================================== -->
+    <main id="viewAdminDashboard" class="hidden pb-28">
+        
+        <!-- CMS Subheader con Estilo Estudio -->
+        <div class="bg-white dark:bg-darkstone border-b border-carbon/10 dark:border-warmwhite/10 sticky top-20 sm:top-24 z-30 transition-colors">
+            <div class="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <span class="font-mono text-xs px-2.5 py-1 bg-bronze/10 text-bronze border border-bronze/30 font-bold uppercase tracking-wider">
+                        Estudio CMS
+                    </span>
+                    <span id="adminGreeting" class="font-mono text-xs text-stone-dark dark:text-stone truncate max-w-xs sm:max-w-md">
+                        Sesión: Nicolas Techeira
+                    </span>
+                </div>
 
-            <!-- Vista 1: Crear Álbum -->
-            <div id="viewCreate" class="space-y-4">
-                <form id="uploadForm" onsubmit="app.handleCreateAlbumAndUpload(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre del Álbum / Evento</label>
-                        <input type="text" id="albumTitle" placeholder="Ej: Casamiento Julieta & Lucas" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors" required>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Fecha del Evento</label>
-                        <input type="text" id="albumDate" placeholder="Ej: 15 de Septiembre, 2026" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors" required>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Imagen de Portada del Álbum</label>
-                        <input type="file" id="coverFile" accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 file:cursor-pointer" required>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Fotografías del Álbum (Múltiples)</label>
-                        <input type="file" id="photosFiles" accept="image/*" multiple class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700 file:cursor-pointer" required>
-                    </div>
-
-                    <button type="submit" class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/30 transition-all duration-300 flex items-center justify-center space-x-2 mt-4">
-                        <i data-lucide="upload-cloud" class="w-4 h-4"></i>
-                        <span>Crear Álbum y Subir Fotos</span>
+                <div class="flex items-center space-x-3">
+                    <button onclick="app.goHome()" class="btn-editorial-secondary text-xs py-1.5 px-3" title="Ver catálogo público">
+                        <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+                        <span class="hidden sm:inline">Ver Web Pública</span>
                     </button>
-                </form>
-            </div>
-
-            <!-- Vista 2: Gestionar / Borrar Álbumes -->
-            <div id="viewManage" class="space-y-4 hidden">
-                <div id="adminAlbumsList" class="space-y-3 max-h-96 overflow-y-auto pr-2">
-                    <!-- Los álbumes se cargan dinámicamente aquí -->
+                    <button onclick="app.handleLogout()" class="px-3 py-1.5 font-mono text-xs text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors flex items-center space-x-1" title="Cerrar sesión">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                        <span>Salir</span>
+                    </button>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Modal de Búsqueda por Reconocimiento Facial -->
-    <div id="searchModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden animate-fade-in">
-        <div class="bg-cardBg border border-slate-800 rounded-3xl w-full max-w-lg p-8 shadow-2xl relative">
-            <button onclick="app.closeSearchModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-8 pt-8 sm:pt-10">
+            
+            <!-- Tarjetas de Métricas del Estudio -->
+            <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-10" aria-label="Métricas del sistema">
+                
+                <div class="bg-white dark:bg-card border border-carbon/10 dark:border-warmwhite/10 p-5 sm:p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-mono text-xs text-stone-dark dark:text-stone uppercase">Publicados</span>
+                        <i data-lucide="check-circle" class="w-4 h-4 text-bronze"></i>
+                    </div>
+                    <div id="statPublishedCount" class="font-editorial text-3xl sm:text-4xl font-semibold text-carbon dark:text-warmwhite">0</div>
+                    <span class="font-mono text-[11px] text-stone">Visibles en la web</span>
+                </div>
+
+                <div class="bg-white dark:bg-card border border-carbon/10 dark:border-warmwhite/10 p-5 sm:p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-mono text-xs text-stone-dark dark:text-stone uppercase">Borradores</span>
+                        <i data-lucide="file-text" class="w-4 h-4 text-stone"></i>
+                    </div>
+                    <div id="statDraftCount" class="font-editorial text-3xl sm:text-4xl font-semibold text-carbon dark:text-warmwhite">0</div>
+                    <span class="font-mono text-[11px] text-stone">En preparación</span>
+                </div>
+
+                <div class="bg-white dark:bg-card border border-carbon/10 dark:border-warmwhite/10 p-5 sm:p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-mono text-xs text-stone-dark dark:text-stone uppercase">Fotografías</span>
+                        <i data-lucide="camera" class="w-4 h-4 text-bronze"></i>
+                    </div>
+                    <div id="statPhotosCount" class="font-editorial text-3xl sm:text-4xl font-semibold text-carbon dark:text-warmwhite">0</div>
+                    <span class="font-mono text-[11px] text-stone">Total archivadas</span>
+                </div>
+
+                <div class="bg-white dark:bg-card border border-carbon/10 dark:border-warmwhite/10 p-5 sm:p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-mono text-xs text-stone-dark dark:text-stone uppercase">Precio Ref.</span>
+                        <i data-lucide="tag" class="w-4 h-4 text-bronze"></i>
+                    </div>
+                    <div class="font-editorial text-3xl sm:text-4xl font-semibold text-carbon dark:text-warmwhite">$ 4.000</div>
+                    <span class="font-mono text-[11px] text-stone">ARS por foto</span>
+                </div>
+
+            </section>
+
+            <!-- Barra de Herramientas CMS: Búsqueda, Filtro, Crear -->
+            <div class="bg-white dark:bg-card border border-carbon/10 dark:border-warmwhite/10 p-4 sm:p-6 shadow-sm mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                
+                <!-- Búsqueda -->
+                <div class="relative flex-1 max-w-md">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3.5 text-stone"></i>
+                    <input type="text" id="adminSearchInput" oninput="app.handleAdminSearch(this.value)" placeholder="Buscar por título, categoría o slug..." class="w-full pl-10 pr-4 py-2.5 bg-warmwhite dark:bg-carbon border border-carbon/15 dark:border-warmwhite/15 text-carbon dark:text-warmwhite font-mono text-xs focus:outline-none focus:border-bronze">
+                </div>
+
+                <!-- Filtro de Estado & Botón Crear -->
+                <div class="flex items-center space-x-3">
+                    <select id="adminStatusFilter" onchange="app.handleAdminFilterChange(this.value)" class="px-3.5 py-2.5 bg-warmwhite dark:bg-carbon border border-carbon/15 dark:border-warmwhite/15 text-carbon dark:text-warmwhite font-mono text-xs focus:outline-none focus:border-bronze">
+                        <option value="all">Todos los estados</option>
+                        <option value="published">Solo Publicados</option>
+                        <option value="draft">Solo Borradores</option>
+                    </select>
+
+                    <button onclick="app.openAlbumFormModal()" class="btn-editorial-bronze text-xs py-2.5">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>Crear Álbum</span>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Lista / Tabla de Álbumes -->
+            <section class="bg-white dark:bg-card border border-carbon/10 dark:border-warmwhite/10 overflow-hidden shadow-sm" aria-label="Listado administrativo de álbumes">
+                <div id="adminAlbumsContainer" class="divide-y divide-carbon/10 dark:divide-warmwhite/10">
+                    <!-- Dynamic rows rendered by script.js -->
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- 6. MODAL: CREAR / EDITAR ÁLBUM (CMS)       -->
+    <!-- ========================================== -->
+    <div id="albumFormModal" class="fixed inset-0 z-50 flex items-center justify-center bg-carbon/85 backdrop-blur-sm hidden animate-fade-in p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-darkstone border border-carbon/15 dark:border-warmwhite/15 w-full max-w-3xl p-6 sm:p-10 shadow-2xl relative my-8 max-h-[92vh] overflow-y-auto">
+            
+            <button onclick="app.closeAlbumFormModal()" class="absolute top-6 right-6 text-stone hover:text-carbon dark:hover:text-warmwhite transition-colors" title="Cerrar modal" aria-label="Cerrar">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
-            <h3 class="text-xl font-bold text-white mb-2">Búsqueda Facial Inteligente</h3>
-            <p class="text-slate-400 text-xs mb-6">Sube una selfie tuya para encontrar tus fotos.</p>
-            
-            <form id="searchForm" onsubmit="app.handleFaceSearch(event)" class="space-y-5">
-                <div class="border-2 border-dashed border-slate-700/60 hover:border-indigo-500/80 rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 group bg-slate-900/40">
-                    <input type="file" id="selfieFile" accept="image/*" class="hidden" required onchange="app.previewSelfieName(this)">
-                    <label for="selfieFile" class="cursor-pointer flex flex-col items-center">
-                        <div class="w-12 h-12 rounded-full bg-slate-800 group-hover:bg-indigo-600/20 group-hover:scale-110 transition-all duration-300 flex items-center justify-center mb-3">
-                            <i data-lucide="user-check" class="w-6 h-6 text-indigo-400"></i>
-                        </div>
-                        <span id="selfieLabelText" class="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">Sube tu selfie de referencia</span>
-                    </label>
+
+            <span class="font-mono text-xs text-bronze uppercase tracking-widest block mb-1">Editor de Álbum</span>
+            <h3 id="albumModalTitle" class="font-editorial text-2xl sm:text-3xl font-medium text-carbon dark:text-warmwhite mb-6">Crear Nuevo Álbum</h3>
+
+            <form id="albumSaveForm" onsubmit="app.handleSaveAlbum(event)" class="space-y-6">
+                <input type="hidden" id="formAlbumId" value="">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="formTitle" class="block font-mono text-xs uppercase text-stone-dark dark:text-stone mb-1">Título del Álbum *</label>
+                        <input type="text" id="formTitle" placeholder="Ej: PORTUGAL INFANTIL" required oninput="app.autoGenerateSlug(this.value)" class="w-full px-4 py-2.5 bg-warmwhite dark:bg-carbon border border-carbon/20 dark:border-warmwhite/20 text-carbon dark:text-warmwhite text-sm focus:outline-none focus:border-bronze">
+                    </div>
+
+                    <div>
+                        <label for="formSlug" class="block font-mono text-xs uppercase text-stone-dark dark:text-stone mb-1">Slug / URL amigable *</label>
+                        <input type="text" id="formSlug" placeholder="portugal-infantil" required class="w-full px-4 py-2.5 bg-warmwhite dark:bg-carbon border border-carbon/20 dark:border-warmwhite/20 text-carbon dark:text-warmwhite text-sm font-mono text-xs focus:outline-none focus:border-bronze">
+                    </div>
                 </div>
-                <button type="submit" class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/30 transition-all duration-300 flex items-center justify-center space-x-2">
-                    <i data-lucide="sparkles" class="w-4 h-4"></i>
-                    <span>Buscar mis fotos con IA</span>
-                </button>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label for="formDate" class="block font-mono text-xs uppercase text-stone-dark dark:text-stone mb-1">Fecha del Evento *</label>
+                        <input type="text" id="formDate" placeholder="Ej: 13 de Septiembre de 2026" required class="w-full px-4 py-2.5 bg-warmwhite dark:bg-carbon border border-carbon/20 dark:border-warmwhite/20 text-carbon dark:text-warmwhite text-sm focus:outline-none focus:border-bronze">
+                    </div>
+
+                    <div>
+                        <label for="formCategory" class="block font-mono text-xs uppercase text-stone-dark dark:text-stone mb-1">Categoría</label>
+                        <select id="formCategory" class="w-full px-4 py-2.5 bg-warmwhite dark:bg-carbon border border-carbon/20 dark:border-warmwhite/20 text-carbon dark:text-warmwhite text-sm focus:outline-none focus:border-bronze">
+                            <option value="Fiestas">Fiestas</option>
+                            <option value="Ballet">Ballet</option>
+                            <option value="Eventos">Eventos</option>
+                            <option value="Bodas">Bodas</option>
+                            <option value="Deportes">Deportes</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="formPrice" class="block font-mono text-xs uppercase text-stone-dark dark:text-stone mb-1">Precio por Foto ($)</label>
+                        <input type="number" id="formPrice" value="4000" min="0" step="100" class="w-full px-4 py-2.5 bg-warmwhite dark:bg-carbon border border-carbon/20 dark:border-warmwhite/20 text-carbon dark:text-warmwhite text-sm focus:outline-none focus:border-bronze">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="formDesc" class="block font-mono text-xs uppercase text-stone-dark dark:text-stone mb-1">Descripción / Contacto</label>
+                    <textarea id="formDesc" rows="2" placeholder="Busca, descarga y etiqueta! - Instagram: @nicolastecheira" class="w-full px-4 py-2.5 bg-warmwhite dark:bg-carbon border border-carbon/20 dark:border-warmwhite/20 text-carbon dark:text-warmwhite text-sm focus:outline-none focus:border-bronze"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="formStatus" class="block font-mono text-xs uppercase text-stone-dark dark:text-stone mb-1">Estado de Publicación</label>
+                        <select id="formStatus" class="w-full px-4 py-2.5 bg-warmwhite dark:bg-carbon border border-carbon/20 dark:border-warmwhite/20 text-carbon dark:text-warmwhite text-sm focus:outline-none focus:border-bronze">
+                            <option value="draft">Borrador (Oculto del público)</option>
+                            <option value="published">Publicado (Visible en el sitio web)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="formOrder" class="block font-mono text-xs uppercase text-stone-dark dark:text-stone mb-1">Orden de aparición</label>
+                        <input type="number" id="formOrder" value="1" min="1" class="w-full px-4 py-2.5 bg-warmwhite dark:bg-carbon border border-carbon/20 dark:border-warmwhite/20 text-carbon dark:text-warmwhite text-sm focus:outline-none focus:border-bronze">
+                    </div>
+                </div>
+
+                <!-- Imagen de Portada -->
+                <div class="border border-carbon/15 dark:border-warmwhite/15 p-4 bg-warmwhite/50 dark:bg-carbon/50">
+                    <label class="block font-mono text-xs uppercase text-stone-dark dark:text-stone mb-2">Imagen de Portada</label>
+                    <div class="flex items-center space-x-4">
+                        <img id="formCoverPreview" src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80&w=300" alt="Vista previa de portada" class="w-24 h-16 object-cover border border-carbon/20 dark:border-warmwhite/20">
+                        <div class="flex-1">
+                            <input type="file" id="formCoverFile" accept="image/*" onchange="app.handleCoverFileSelect(this)" class="w-full text-xs text-stone-dark dark:text-stone file:mr-3 file:py-1.5 file:px-3 file:border file:border-carbon/20 dark:file:border-warmwhite/20 file:text-xs file:font-mono file:bg-white dark:file:bg-darkstone file:text-carbon dark:file:text-warmwhite hover:file:border-bronze cursor-pointer">
+                            <p class="font-mono text-[11px] text-stone mt-1">Formato WebP, JPEG o PNG comprimido automáticamente para rendimiento óptimo.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subida Múltiple de Fotos -->
+                <div class="border border-carbon/15 dark:border-warmwhite/15 p-4 bg-warmwhite/50 dark:bg-carbon/50">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block font-mono text-xs uppercase text-stone-dark dark:text-stone">Fotografías del Álbum</label>
+                        <span id="formPhotosCountBadge" class="font-mono text-xs text-bronze font-bold">0 fotos cargadas</span>
+                    </div>
+
+                    <div class="border-2 border-dashed border-carbon/20 dark:border-warmwhite/20 hover:border-bronze p-6 text-center cursor-pointer transition-colors bg-white dark:bg-darkstone relative mb-4">
+                        <input type="file" id="formGalleryFiles" accept="image/*" multiple onchange="app.handleGalleryFilesSelect(this)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                        <div class="flex flex-col items-center">
+                            <i data-lucide="upload-cloud" class="w-6 h-6 text-bronze mb-1"></i>
+                            <span class="font-mono text-xs text-carbon dark:text-warmwhite font-bold">Arrastra o haz clic para subir fotografías</span>
+                            <span class="font-mono text-[11px] text-stone mt-0.5">Se procesan y protegen con la firma de marca</span>
+                        </div>
+                    </div>
+
+                    <!-- Miniaturas -->
+                    <div id="formPhotosThumbnails" class="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-52 overflow-y-auto pr-1">
+                        <!-- Uploaded thumbnails injected dynamically -->
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex items-center justify-end space-x-3 pt-4 border-t border-carbon/10 dark:border-warmwhite/10">
+                    <button type="button" onclick="app.closeAlbumFormModal()" class="btn-editorial-secondary text-xs">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="formSubmitBtn" class="btn-editorial-primary text-xs">
+                        <i data-lucide="save" class="w-4 h-4"></i>
+                        <span>Guardar Álbum</span>
+                    </button>
+                </div>
+
             </form>
         </div>
     </div>
 
-    <!-- Script principal -->
+    <!-- ========================================== -->
+    <!-- 7. MODAL: BÚSQUEDA FACIAL INTELIGENTE      -->
+    <!-- ========================================== -->
+    <div id="searchModal" class="fixed inset-0 z-50 flex items-center justify-center bg-carbon/85 backdrop-blur-sm hidden animate-fade-in p-4" role="dialog" aria-modal="true" aria-labelledby="searchModalTitle">
+        <div class="bg-white dark:bg-darkstone border border-carbon/15 dark:border-warmwhite/15 w-full max-w-md p-6 sm:p-8 shadow-2xl relative animate-slide-up">
+            
+            <button onclick="app.closeSearchModal()" class="absolute top-6 right-6 text-stone hover:text-carbon dark:hover:text-warmwhite transition-colors" title="Cerrar modal" aria-label="Cerrar">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <span class="font-mono text-xs text-bronze uppercase tracking-widest block mb-1">Reconocimiento</span>
+            <h3 id="searchModalTitle" class="font-editorial text-2xl font-medium text-carbon dark:text-warmwhite mb-1">Búsqueda Facial</h3>
+            <p class="font-mono text-xs text-stone-dark dark:text-stone mb-6">Sube una selfie para encontrar tus fotografías en este álbum.</p>
+
+            <form id="faceSearchForm" onsubmit="app.processFaceSearch(event)" class="space-y-6">
+                <div>
+                    <div id="selfieDropZone" class="bg-warmwhite dark:bg-carbon border border-dashed border-carbon/25 dark:border-warmwhite/25 hover:border-bronze p-6 text-center cursor-pointer transition-all relative group">
+                        <input type="file" id="selfieInput" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onchange="app.handleSelfieSelected(this)">
+                        
+                        <div id="selfiePrompt" class="flex flex-col items-center justify-center space-y-2">
+                            <i data-lucide="camera" class="w-6 h-6 text-bronze group-hover:scale-110 transition-transform"></i>
+                            <span class="font-mono text-xs uppercase tracking-wider text-carbon dark:text-warmwhite font-bold">Seleccionar Selfie</span>
+                        </div>
+
+                        <div id="selfiePreviewContainer" class="hidden flex flex-col items-center">
+                            <img id="selfiePreviewImg" src="" alt="Selfie de referencia" class="w-20 h-20 rounded-full object-cover border-2 border-bronze shadow-md mb-2">
+                            <span id="selfieFileName" class="font-mono text-xs text-stone truncate max-w-[200px]">foto_rostro.jpg</span>
+                        </div>
+                    </div>
+
+                    <p class="font-mono text-[11px] text-center text-stone mt-3">
+                        JPG o PNG · Tu foto se utiliza exclusivamente para el cotejo visual.
+                    </p>
+                </div>
+
+                <div class="flex items-center space-x-3 pt-2">
+                    <button type="button" onclick="app.closeSearchModal()" class="btn-editorial-secondary flex-1 text-xs">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btnRunFaceSearch" class="btn-editorial-primary flex-1 text-xs">
+                        <span id="faceSearchBtnText">Iniciar Búsqueda</span>
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 8. MODAL: CARRITO Y CHECKOUT               -->
+    <!-- ========================================== -->
+    <div id="cartModal" class="fixed inset-0 z-50 flex items-center justify-center bg-carbon/85 backdrop-blur-sm hidden animate-fade-in p-4" role="dialog" aria-modal="true">
+        <div class="bg-white dark:bg-darkstone border border-carbon/15 dark:border-warmwhite/15 w-full max-w-lg p-6 sm:p-8 shadow-2xl relative max-h-[90vh] flex flex-col">
+            
+            <button onclick="app.closeCartModal()" class="absolute top-6 right-6 text-stone hover:text-carbon dark:hover:text-warmwhite transition-colors" title="Cerrar carrito" aria-label="Cerrar">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-10 h-10 border border-bronze bg-bronze/10 text-bronze flex items-center justify-center font-editorial font-bold">
+                    <span>NT</span>
+                </div>
+                <div>
+                    <h3 class="font-editorial text-2xl font-medium text-carbon dark:text-warmwhite">Selección de Fotografías</h3>
+                    <p class="font-mono text-xs text-stone-dark dark:text-stone">Descarga original en alta resolución sin marca de agua</p>
+                </div>
+            </div>
+
+            <!-- Items list -->
+            <div id="cartItemsList" class="flex-1 overflow-y-auto divide-y divide-carbon/10 dark:divide-warmwhite/10 pr-1 my-4">
+                <!-- Cart items rendered dynamically -->
+            </div>
+
+            <!-- Total y Checkout -->
+            <div class="pt-4 border-t border-carbon/10 dark:border-warmwhite/10">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="font-mono text-xs uppercase text-stone-dark dark:text-stone">Total a abonar:</span>
+                    <span id="cartTotalSum" class="font-editorial text-2xl font-bold text-carbon dark:text-warmwhite">$ 0</span>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <button onclick="app.clearCart()" class="font-mono text-xs text-stone hover:text-red-500 transition-colors px-3 py-2">
+                        Vaciar
+                    </button>
+                    <button onclick="app.simulateCheckout()" class="btn-editorial-bronze flex-1 text-xs py-3.5">
+                        <i data-lucide="credit-card" class="w-4 h-4"></i>
+                        <span>Continuar con MercadoPago</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 9. MODAL: CÓDIGO QR / COMPARTIR            -->
+    <!-- ========================================== -->
+    <div id="qrModal" class="fixed inset-0 z-50 flex items-center justify-center bg-carbon/85 backdrop-blur-sm hidden animate-fade-in p-4" role="dialog" aria-modal="true">
+        <div class="bg-white dark:bg-darkstone border border-carbon/15 dark:border-warmwhite/15 w-full max-w-sm p-6 sm:p-8 text-center shadow-2xl relative">
+            <button onclick="app.closeQrModal()" class="absolute top-5 right-5 text-stone hover:text-carbon dark:hover:text-warmwhite transition-colors" title="Cerrar">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <span class="font-mono text-xs text-bronze uppercase tracking-widest block mb-1">Acceso Móvil</span>
+            <h4 class="font-editorial text-xl font-medium text-carbon dark:text-warmwhite mb-1">Compartir Catálogo</h4>
+            <p class="font-mono text-xs text-stone-dark dark:text-stone mb-5">Escanea para acceder a las fotografías</p>
+
+            <div class="bg-white p-3 inline-block mb-4 border border-carbon/10 shadow-inner">
+                <canvas id="qrCanvas" class="w-44 h-44 mx-auto"></canvas>
+            </div>
+
+            <p class="font-mono text-[11px] text-stone bg-carbon/5 dark:bg-warmwhite/5 py-1.5 px-3 mb-4 truncate border border-carbon/10 dark:border-warmwhite/10">
+                Nicolas Techeira Fotografías
+            </p>
+
+            <button onclick="app.copyProfileLink()" class="btn-editorial-primary w-full text-xs">
+                <i data-lucide="link" class="w-3.5 h-3.5"></i>
+                <span>Copiar Enlace Directo</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 10. MODAL: LIGHTBOX (VISOR EDITORIAL)      -->
+    <!-- ========================================== -->
+    <div id="lightboxModal" class="fixed inset-0 z-50 flex items-center justify-center hidden animate-fade-in" role="dialog" aria-modal="true">
+        
+        <!-- Botón Cerrar -->
+        <button onclick="app.closeLightbox()" class="absolute top-6 right-6 text-white/80 hover:text-white z-50 p-2 min-touch-target rounded-full bg-carbon/60 hover:bg-carbon border border-white/10 transition-colors" title="Cerrar visor (Esc)">
+            <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+
+        <!-- Botón Anterior -->
+        <button onclick="app.prevLightboxPhoto()" class="absolute left-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white z-50 p-3 min-touch-target rounded-full bg-carbon/60 hover:bg-carbon border border-white/10 transition-all" title="Foto anterior (←)">
+            <i data-lucide="chevron-left" class="w-6 h-6"></i>
+        </button>
+
+        <!-- Botón Siguiente -->
+        <button onclick="app.nextLightboxPhoto()" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white z-50 p-3 min-touch-target rounded-full bg-carbon/60 hover:bg-carbon border border-white/10 transition-all" title="Foto siguiente (→)">
+            <i data-lucide="chevron-right" class="w-6 h-6"></i>
+        </button>
+
+        <!-- Contenedor de la Imagen con Sello Editorial -->
+        <div class="relative max-w-5xl max-h-[85vh] p-4 flex flex-col items-center justify-center">
+            <div class="relative overflow-hidden shadow-2xl border border-white/10 bg-carbon">
+                <img id="lightboxImg" src="" alt="Fotografía ampliada" class="max-h-[72vh] w-auto object-contain">
+                <!-- Marca de Agua Nicolas Techeira -->
+                <div class="picsel-watermark-overlay">
+                    <span class="picsel-watermark-text">Nicolas Techeira</span>
+                    <span class="picsel-watermark-subtext">Vista Previa · Oberá</span>
+                </div>
+            </div>
+
+            <!-- Controles Inferiores del Lightbox -->
+            <div class="mt-4 flex items-center justify-between w-full max-w-2xl text-white px-2">
+                <span id="lightboxIndexText" class="font-mono text-xs text-bronze tracking-wider">Foto 1 de 10</span>
+                <button id="lightboxAddCartBtn" onclick="app.toggleCartFromLightbox()" class="btn-editorial-bronze text-xs py-2 px-4">
+                    <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
+                    <span>+ Agregar al Carrito</span>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 11. BARRA FLOTANTE DEL CARRITO             -->
+    <!-- ========================================== -->
+    <div id="floatingCartBar" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 hidden animate-slide-up">
+        <div class="bg-carbon/95 text-warmwhite px-6 py-3.5 rounded-sm shadow-2xl border border-bronze/40 flex items-center space-x-6">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-bronze flex items-center justify-center text-white font-mono font-bold text-xs">
+                    <span id="floatingCartCount">1</span>
+                </div>
+                <div>
+                    <span class="font-mono text-xs uppercase tracking-wider block text-stone-light">Fotos en selección</span>
+                    <span id="floatingCartTotal" class="font-editorial text-base font-bold text-bronze-light">$ 4.000</span>
+                </div>
+            </div>
+            
+            <button onclick="app.openCartModal()" class="btn-editorial-bronze text-xs py-2 px-4">
+                <span>Ver Selección</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 12. PIE DE PÁGINA EDITORIAL                -->
+    <!-- ========================================== -->
+    <footer class="border-t border-carbon/10 dark:border-warmwhite/10 bg-warmwhite dark:bg-carbon pt-16 pb-12 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-carbon/10 dark:border-warmwhite/10">
+                
+                <!-- Columna Marca -->
+                <div class="md:col-span-6 space-y-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="monogram-badge">
+                            <span>NT</span>
+                        </div>
+                        <span class="brand-logotype text-2xl text-carbon dark:text-warmwhite">
+                            Nicolas Techeira Fotografías
+                        </span>
+                    </div>
+                    <p class="font-editorial italic text-stone-dark dark:text-stone text-lg max-w-md">
+                        “Historias que merecen ser recordadas.”
+                    </p>
+                    <p class="font-mono text-xs text-stone pt-2">
+                        Fotografía editorial contemporánea, eventos sociales y ballet artístico.
+                    </p>
+                </div>
+
+                <!-- Columna Ubicación y Redes -->
+                <div class="md:col-span-3 space-y-2 font-mono text-xs">
+                    <span class="text-bronze uppercase tracking-widest font-bold block mb-2">Estudio</span>
+                    <p class="text-carbon dark:text-warmwhite">Oberá, Misiones, Argentina</p>
+                    <a href="https://instagram.com/nicolastecheira" target="_blank" rel="noopener noreferrer" class="block text-stone hover:text-bronze transition-colors">
+                        Instagram: @nicolastecheira
+                    </a>
+                </div>
+
+                <!-- Columna Acceso Profesional -->
+                <div class="md:col-span-3 space-y-2 font-mono text-xs">
+                    <span class="text-bronze uppercase tracking-widest font-bold block mb-2">Profesional</span>
+                    <a href="#/admin/login" class="inline-block text-carbon dark:text-warmwhite hover:text-bronze transition-colors underline underline-offset-4 decoration-bronze">
+                        Acceso Estudio / CMS
+                    </a>
+                    <p class="text-stone text-[11px] pt-1">
+                        Gestión de álbumes, fotografías y publicación directa.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Copyright y Firma -->
+            <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs font-mono text-stone gap-4">
+                <span>© 2026 Nicolas Techeira Fotografías. Todos los derechos reservados.</span>
+                <span class="text-stone">Identidad Visual & Plataforma Fotográfica</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========================================== -->
+    <!-- 13. SCRIPTS                                -->
+    <!-- ========================================== -->
+    <script src="db.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
