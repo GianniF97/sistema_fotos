@@ -8,8 +8,11 @@ frontend/.env
 node_modules/
 npm-debug.log*
 
-# Supabase temporales
-supabase/.temp/
+# Cloudflare y temporales
+.wrangler/
+
+# Papelera de respaldo previo a eliminacion
+_papelera/
 
 # Sistema y cache
 .DS_Store
