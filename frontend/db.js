@@ -804,37 +804,7 @@ class NicolasTecheiraDB {
             }
         }
 
-        // Simulación offline/cliente si el servidor estuviera desconectado
-        const count = (orderData.items || []).length;
-        const subtotal = (orderData.items || []).reduce((sum, it) => sum + Number(it.price || 4000), 0);
-        let discountRate = 0;
-        let discountLabel = 'Precio regular';
-
-        if (count >= 20 || orderData.isFullAlbum) {
-            discountRate = 0.35;
-            discountLabel = 'Pack Colección Completa (35% OFF)';
-        } else if (count >= 10) {
-            discountRate = 0.25;
-            discountLabel = 'Pack Selección Especial (25% OFF)';
-        } else if (count >= 5) {
-            discountRate = 0.15;
-            discountLabel = 'Pack 5 Recuerdos (15% OFF)';
-        }
-
-        const discountAmount = Math.round(subtotal * discountRate);
-        const totalAmount = Math.max(0, subtotal - discountAmount);
-        const token = 'nt-' + Date.now().toString(36) + Math.random().toString(36).substring(2, 10);
-
-        return {
-            orderNumber: `NT-${Date.now().toString().slice(-6)}`,
-            token,
-            count,
-            subtotal,
-            discountAmount,
-            discountLabel,
-            totalAmount,
-            items: orderData.items
-        };
+        throw new Error('Servicio de pagos no disponible: el servidor no está conectado.');
     }
 
     async getOrderByToken(token) {

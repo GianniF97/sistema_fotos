@@ -763,14 +763,14 @@ async function handleApiRequest(req, res) {
         }
     }
 
-    // 15. Descarga Segura de Fotografía Original por Token
-    const downloadMatch = pathPart.match(/^\/api\/downloads\/([a-f0-9]{32,64})\/(\d+)$/i);
+    // 15. Descarga Segura de Fotografía Original por Token (solo órdenes con pago aprobado)
+    const downloadMatch = pathPart.match(/^\/api\/downloads\/([a-zA-Z0-9_-]{16,64})\/(\d+)$/i);
     if (downloadMatch && method === 'GET') {
         try {
             const token = downloadMatch[1];
             const photoId = parseInt(downloadMatch[2], 10);
 
-            // Validar que la orden exista y contenga esta foto
+            // Validar que la orden exista y esté pagada
             const [orders] = await pool.query('SELECT * FROM orders WHERE token = ?', [token]);
             if (orders.length === 0) {
                 res.writeHead(403, { 'Content-Type': 'text/plain; charset=UTF-8' });
@@ -778,9 +778,16 @@ async function handleApiRequest(req, res) {
                 return true;
             }
 
+            const order = orders[0];
+            if (order.payment_status !== 'approved') {
+                res.writeHead(403, { 'Content-Type': 'text/plain; charset=UTF-8' });
+                res.end('Acceso denegado: El pago de esta orden aún no ha sido confirmado.');
+                return true;
+            }
+
             const [items] = await pool.query(
                 'SELECT oi.*, p.url, p.filename FROM order_items oi JOIN photos p ON oi.photo_id = p.id WHERE oi.order_id = ? AND oi.photo_id = ?',
-                [orders[0].id, photoId]
+                [order.id, photoId]
             );
 
             if (items.length === 0) {
@@ -820,26 +827,164 @@ async function handleApiRequest(req, res) {
         }
     }
 
-    // 16. Webhook Mercado Pago
+    // 16. Webhook Mercado Pago con Verificación Criptográfica x-signature e Idempotencia
     if (pathPart === '/api/checkout/webhook' && method === 'POST') {
         try {
-            const payload = await parseBody(req);
-            const token = query.get('token') || payload.data?.id;
+            const signatureHeader = req.headers['x-signature'];
+            const requestId = req.headers['x-request-id'];
 
-            if (token) {
-                try {
-                    await pool.query(
-                        "UPDATE orders SET payment_status = 'approved' WHERE token = ? OR mercadopago_preference_id = ?",
-                        [token, token]
-                    );
-                } catch (e) {
-                    console.error('Error actualizando pago en DB:', e);
-                }
+            const webhookSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
+            if (!webhookSecret) {
+                console.error('[MercadoPago Webhook] MERCADOPAGO_WEBHOOK_SECRET no configurado en entorno.');
+                sendJson(res, 500, { ok: false, error: 'Configuración de webhook no disponible en servidor.' });
+                return true;
             }
 
-            sendJson(res, 200, { ok: true, received: true });
+            if (!signatureHeader || !requestId) {
+                sendJson(res, 401, { ok: false, error: 'Cabeceras de firma x-signature o x-request-id faltantes.' });
+                return true;
+            }
+
+            // Parsear ts y v1 de la cabecera x-signature (ej: ts=1704908010,v1=618c85345248dd8...)
+            const sigParts = signatureHeader.split(',').reduce((acc, part) => {
+                const [k, v] = part.split('=').map(s => s && s.trim());
+                if (k && v) acc[k] = v;
+                return acc;
+            }, {});
+
+            const { ts, v1 } = sigParts;
+            if (!ts || !v1) {
+                sendJson(res, 401, { ok: false, error: 'Formato de cabecera x-signature inválido.' });
+                return true;
+            }
+
+            // Validar ventana de tolerancia contra ataques de repetición (5 minutos / 300s)
+            const tsNum = Number(ts);
+            if (isNaN(tsNum)) {
+                sendJson(res, 401, { ok: false, error: 'Timestamp de firma no numérico.' });
+                return true;
+            }
+            const tsMs = tsNum < 1e11 ? tsNum * 1000 : tsNum;
+            const now = Date.now();
+            if (Math.abs(now - tsMs) > 300000) {
+                sendJson(res, 401, { ok: false, error: 'Timestamp de webhook fuera de tolerancia (expirado o ataque de repetición).' });
+                return true;
+            }
+
+            // Extraer identificador del recurso desde query o payload JSON
+            const payload = await parseBody(req);
+            const dataId = query.get('data.id') || query.get('id') || payload.data?.id || payload.id;
+            if (!dataId) {
+                sendJson(res, 200, { ok: true, message: 'Notificación recibida sin ID de recurso de pago.' });
+                return true;
+            }
+
+            // Construir el manifest exacto según especificación oficial de Mercado Pago:
+            // manifest = id:[data.id];request-id:[x-request-id];ts:[ts];
+            const manifest = `id:${dataId};request-id:${requestId};ts:${ts};`;
+            const calculatedHash = crypto.createHmac('sha256', webhookSecret).update(manifest).digest('hex');
+
+            // Comparación en tiempo constante (timing safe) para prevenir ataques de canal lateral
+            let isValidSignature = false;
+            try {
+                const v1Buffer = Buffer.from(v1, 'hex');
+                const calcBuffer = Buffer.from(calculatedHash, 'hex');
+                if (v1Buffer.length === calcBuffer.length && crypto.timingSafeEqual(v1Buffer, calcBuffer)) {
+                    isValidSignature = true;
+                }
+            } catch (sigErr) {
+                isValidSignature = false;
+            }
+
+            if (!isValidSignature) {
+                sendJson(res, 401, { ok: false, error: 'Firma criptográfica inválida.' });
+                return true;
+            }
+
+            // 2. Consulta autoritativa a la API de Mercado Pago (segundo salto de verificación)
+            const mpApiBase = process.env.MERCADOPAGO_API_URL || 'https://api.mercadopago.com';
+            const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+
+            if (!accessToken) {
+                sendJson(res, 500, { ok: false, error: 'MERCADOPAGO_ACCESS_TOKEN no configurado en servidor.' });
+                return true;
+            }
+
+            const mpRes = await fetch(`${mpApiBase}/v1/payments/${encodeURIComponent(dataId)}`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!mpRes.ok) {
+                sendJson(res, 422, { ok: false, error: `No se pudo verificar el pago en la API de Mercado Pago (HTTP ${mpRes.status}).` });
+                return true;
+            }
+
+            const paymentData = await mpRes.json();
+
+            // 3. Verificaciones de integridad de pago:
+            // a. Estado del pago en Mercado Pago
+            if (paymentData.status !== 'approved') {
+                sendJson(res, 200, { ok: true, message: `Pago en estado '${paymentData.status}'; orden no aprobada.` });
+                return true;
+            }
+
+            // b. external_reference debe vincularse al token de nuestra orden
+            const orderToken = paymentData.external_reference;
+            if (!orderToken) {
+                sendJson(res, 422, { ok: false, error: 'El pago en Mercado Pago no contiene external_reference.' });
+                return true;
+            }
+
+            // c. Localizar la orden en la base de datos
+            const [orders] = await pool.query('SELECT * FROM orders WHERE token = ?', [orderToken]);
+            if (orders.length === 0) {
+                sendJson(res, 404, { ok: false, error: 'Orden no encontrada para el external_reference especificado.' });
+                return true;
+            }
+
+            const order = orders[0];
+
+            // d. Moneda debe ser 'ARS'
+            if (paymentData.currency_id !== 'ARS') {
+                sendJson(res, 422, { ok: false, error: `Moneda discrepante: se esperaba ARS, se recibió ${paymentData.currency_id}.` });
+                return true;
+            }
+
+            // e. Monto en centavos debe coincidir exactamente con el total de la orden
+            const paymentCents = Math.round(Number(paymentData.transaction_amount) * 100);
+            const orderCents = Math.round(Number(order.total_amount) * 100);
+            if (paymentCents !== orderCents) {
+                sendJson(res, 422, {
+                    ok: false,
+                    error: `Monto discrepante: la orden requiere ${orderCents} centavos, el pago contiene ${paymentCents} centavos.`
+                });
+                return true;
+            }
+
+            // 4. Actualización transaccional e idempotente en base de datos
+            const [updateResult] = await pool.query(
+                "UPDATE orders SET payment_status = 'approved', updated_at = NOW() WHERE token = ? AND payment_status = 'pending'",
+                [orderToken]
+            );
+
+            if (updateResult.affectedRows === 1) {
+                console.log(`[MercadoPago Webhook] Orden ${order.order_number} (${orderToken}) aprobada exitosamente.`);
+            } else {
+                console.log(`[MercadoPago Webhook] Orden ${order.order_number} ya se encontraba aprobada (evento idempotente).`);
+            }
+
+            sendJson(res, 200, {
+                ok: true,
+                orderNumber: order.order_number,
+                status: 'approved',
+                idempotent: updateResult.affectedRows === 0
+            });
             return true;
         } catch (error) {
+            console.error('[MercadoPago Webhook] Error procesando notificación:', error);
             sendJson(res, 500, { ok: false, error: error.message });
             return true;
         }

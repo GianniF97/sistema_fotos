@@ -91,7 +91,7 @@ El proyecto tiene una base estética, legal y de experiencia de usuario de prime
 
 | ID | Severidad | Área | Archivo y Línea | Descripción Resumida | Dificultad | Esfuerzo |
 | :---: | :---: | :---: | :---: | :--- | :---: | :---: |
-| **SEC-01** | **Crítica** | Pagos y Carrito | `db/api.js:653-674` | Webhook aprueba órdenes sin verificar firma ni consultar API de Mercado Pago | Trivial | Medio |
+| **SEC-01** | **Crítica** | Pagos y Carrito | `db/api.js:824-980` | Webhook de MP: lógica HMAC e idempotencia verificadas (Parcial: simulación) | Trivial | Medio |
 | **SEC-02** | **Crítica** | Control de Acceso | `db/api.js:259,311,372,385,424` | Endpoints de administración (ABM álbumes y fotos) completamente abiertos sin auth | Trivial | Bajo |
 | **SEC-03** | **Crítica** | Pagos y Carrito | `db/api.js:441-450` | El total a pagar se calcula confiando en el precio enviado por el navegador | Baja | Bajo |
 | **SEC-04** | **Crítica** | Protección de Fotos | `script.js:691-702, style.css:344` | Marca de agua por capa CSS: la imagen original de alta resolución viaja al cliente | Trivial | Alto |
@@ -149,28 +149,42 @@ if (pathPart === '/api/checkout/webhook' && method === 'POST') {
 }
 ```
 
-#### Corrección Recomendada:
-El servidor debe:
-1. Validar la firma HMAC SHA-256 de Mercado Pago (`x-signature`).
-2. Utilizar el ID de pago notificado para consultar directamente la API oficial de Mercado Pago (`GET /v1/payments/{id}`).
-3. Verificar que el estado devuelto sea estrictamente `approved` y que el monto coincida con la base de datos antes de cambiar el estado de la orden.
-
 ```javascript
-// Ejemplo de código seguro
-const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
-const xSignature = req.headers['x-signature'];
-// Validar firma criptográfica con crypto.createHmac('sha256', secret)...
-
-const paymentId = payload.data?.id;
-const mpCheck = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-    headers: { 'Authorization': `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}` }
-});
-const paymentData = await mpCheck.json();
-
-if (paymentData.status === 'approved' && paymentData.transaction_amount >= order.total_amount) {
-    await pool.query("UPDATE orders SET payment_status = 'approved' WHERE id = ?", [order.id]);
-}
+// Implementación aplicada en db/api.js
+// 1. Validar x-signature (ts y v1 con HMAC-SHA256 y comparación en tiempo constante)
+// 2. Validar tolerancia temporal (5 min) contra replay attacks
+// 3. Consultar GET /v1/payments/{id} a Mercado Pago
+// 4. Validar payment.status === 'approved', currency_id === 'ARS', montos exactos y external_reference
+// 5. Transacción e idempotencia con UPDATE orders SET payment_status = 'approved' WHERE token = ? AND payment_status = 'pending'
 ```
+
+#### Estado de Remediación:
+* **Estado:** **Parcial: lógica verificada con simulación; pendiente de prueba con credenciales de prueba de Mercado Pago**
+* **Suite de pruebas automatizadas:** `tests/sec-01-webhook.test.js` (10/10 pruebas pasando).
+* **Casos verificados:** Peticiones sin firma (401), firma con hash inválido (401), firma con timestamp viejo (401), monto menor al de la orden (422), moneda distinta a ARS (422), pago no aprobado (rechazado), external_reference no coincidente (422), eventos repetidos (idempotente 200), eliminación total de aprobación por token URL (?token=...), y descargas bloqueadas a órdenes pending.
+
+#### Procedimiento para Prueba con Credenciales Reales de Mercado Pago (Pendiente):
+1. **Obtener Credenciales de Prueba:**
+   - Iniciar sesión en el portal de desarrolladores de Mercado Pago: `https://www.mercadopago.com.ar/developers/panel`
+   - En tu aplicación, ir a **Credenciales de prueba** y copiar:
+     - `MERCADOPAGO_PUBLIC_KEY` (inicia con `TEST-...`)
+     - `MERCADOPAGO_ACCESS_TOKEN` (inicia con `TEST-...`)
+   - Ir a **Webhooks > Configurar notificaciones**:
+     - Configurar la URL de tu webhook (usar un túnel de desarrollo como `ngrok http 3000` o `cloudflared tunnel`, ej: `https://xxxx.ngrok-free.app/api/checkout/webhook`).
+     - Obtener la **Clave secreta** (`MERCADOPAGO_WEBHOOK_SECRET`).
+2. **Configurar el archivo `.env`:**
+   ```env
+   MERCADOPAGO_ACCESS_TOKEN=TEST-tu_access_token_real
+   MERCADOPAGO_WEBHOOK_SECRET=tu_webhook_secret_real
+   ALLOW_SIMULATED_PAYMENTS=false
+   NODE_ENV=development
+   ```
+3. **Ejecutar flujo de prueba:**
+   - Iniciar servidor con `npm start` y levantar túnel ngrok apuntando al puerto 3000.
+   - En el frontend, agregar fotos al carrito e iniciar checkout.
+   - Pagar en Mercado Pago usando tarjetas de prueba oficiales de Mercado Pago (disponibles en la documentación de testing de MP).
+   - Verificar en consola que el webhook reciba la cabecera `x-signature`, valide el HMAC, consulte el pago a Mercado Pago y apruebe la orden en MariaDB.
+   - Confirmar que las descargas de alta resolución se habilitan únicamente tras la confirmación de pago.
 
 ---
 
