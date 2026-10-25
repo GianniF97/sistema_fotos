@@ -1,6 +1,6 @@
 /**
- * NICOLAS TECHEIRA FOTOGRAFÍAS — DATA LAYER & SUPABASE INTEGRATION (db.js)
- * Conexión nativa con Supabase (PostgreSQL, Supabase Auth y Supabase Storage)
+ * NICOLAS TECHEIRA FOTOGRAFÍAS — DATA LAYER (db.js)
+ * Conexión con MariaDB / API REST
  * con respaldo automático y sincronización con IndexedDB local.
  */
 
@@ -9,33 +9,14 @@ class NicolasTecheiraDB {
         this.dbName = 'NicolasTecheira_Database';
         this.version = 1;
         this.db = null;
-        this.supabase = null;
-        this.supabaseConnected = false;
         this.mariadbConnected = false;
         this.isReady = false;
-
-        // Configuración de Supabase
-        this.supabaseUrl = 'https://asuepmdkhuetkndxsaaf.supabase.co';
-        this.supabaseKey = 'sb_publishable_gMLIiwC28mUovg6m-49zZA_Op-iKZDv';
-        this.storageBucket = 'portfolio-photos';
 
         this.initPromise = this.init();
     }
 
     async init() {
-        // 1. Obtener configuración dinámica si está disponible en el servidor
-        try {
-            const res = await fetch('/api/config');
-            if (res.ok) {
-                const config = await res.json();
-                if (config.supabaseUrl) this.supabaseUrl = config.supabaseUrl;
-                if (config.supabaseKey) this.supabaseKey = config.supabaseKey;
-            }
-        } catch (e) {
-            console.log('[DB] Usando configuración de entorno por defecto.');
-        }
-
-        // 1.1 Probar disponibilidad de MariaDB / MySQL via API REST local o Hostinger
+        // 1. Probar disponibilidad de MariaDB / MySQL via API REST
         try {
             const dbRes = await fetch('/api/db/status');
             if (dbRes.ok) {
@@ -49,61 +30,11 @@ class NicolasTecheiraDB {
             this.mariadbConnected = false;
         }
 
-        // 2. Inicializar cliente Supabase si la librería está cargada
-        if (typeof window.supabase !== 'undefined' && this.supabaseUrl && this.supabaseKey) {
-            try {
-                this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey, {
-                    auth: {
-                        persistSession: true,
-                        autoRefreshToken: true,
-                        detectSessionInUrl: true
-                    }
-                });
-                console.log('[Supabase] Cliente inicializado correctamente:', this.supabaseUrl);
-            } catch (err) {
-                console.warn('[Supabase] Error al inicializar cliente Supabase:', err);
-            }
-        }
-
-        // 3. Inicializar almacenamiento local IndexedDB (Caché y Respaldo Offline)
+        // 2. Inicializar almacenamiento local IndexedDB (Caché y Respaldo Offline)
         await this.initIndexedDB();
-
-        // 4. Probar disponibilidad de tablas en Supabase
-        await this.checkSupabaseTables();
 
         this.isReady = true;
         return this;
-    }
-
-    async checkSupabaseTables() {
-        if (!this.supabase) {
-            this.supabaseConnected = false;
-            return;
-        }
-
-        try {
-            // Comprobamos si la tabla albums existe en el esquema remoto
-            const { data, error } = await this.supabase
-                .from('albums')
-                .select('id')
-                .limit(1);
-
-            if (error) {
-                if (error.code === 'PGRST205' || error.message.includes('Could not find')) {
-                    console.log('[Supabase] Conectado al proyecto, pero las tablas remotas aún no han sido migradas. Usando capa local.');
-                    this.supabaseConnected = false;
-                } else {
-                    console.warn('[Supabase] Error al verificar tablas:', error.message);
-                    this.supabaseConnected = false;
-                }
-            } else {
-                console.log('[Supabase] Tablas remotas verificadas y activas. Modo producción online habilitado.');
-                this.supabaseConnected = true;
-            }
-        } catch (err) {
-            console.warn('[Supabase] Falló la verificación remota:', err);
-            this.supabaseConnected = false;
-        }
     }
 
     async ensureReady() {
@@ -297,7 +228,7 @@ class NicolasTecheiraDB {
     }
 
     // =========================================================================
-    // OPERACIONES DE ÁLBUMES (UNIFICADAS: SUPABASE + FALLBACK)
+    // OPERACIONES DE ÁLBUMES (MARIADB + FALLBACK LOCAL)
     // =========================================================================
 
     async getPublishedAlbums() {
@@ -314,27 +245,6 @@ class NicolasTecheiraDB {
                 }
             } catch (err) {
                 console.warn('[MariaDB] Falló consulta remota de álbumes publicados:', err);
-            }
-        }
-
-        if (this.supabaseConnected) {
-            try {
-                const { data, error } = await this.supabase
-                    .from('albums')
-                    .select('*, photos(count)')
-                    .eq('status', 'published')
-                    .order('sort_order', { ascending: true })
-                    .order('created_at', { ascending: false });
-
-                if (!error && data) {
-                    return data.map(a => ({
-                        ...a,
-                        date: a.event_date || a.date,
-                        photo_count: (a.photos && a.photos[0]) ? a.photos[0].count : (a.photo_count || 0)
-                    }));
-                }
-            } catch (err) {
-                console.warn('[Supabase] Falló consulta remota, usando local:', err);
             }
         }
 
@@ -374,26 +284,6 @@ class NicolasTecheiraDB {
             }
         }
 
-        if (this.supabaseConnected) {
-            try {
-                const { data, error } = await this.supabase
-                    .from('albums')
-                    .select('*, photos(count)')
-                    .order('sort_order', { ascending: true })
-                    .order('created_at', { ascending: false });
-
-                if (!error && data) {
-                    return data.map(a => ({
-                        ...a,
-                        date: a.event_date || a.date,
-                        photo_count: (a.photos && a.photos[0]) ? a.photos[0].count : (a.photo_count || 0)
-                    }));
-                }
-            } catch (err) {
-                console.warn('[Supabase] Falló getAllAlbums remoto:', err);
-            }
-        }
-
         const all = await this.getAll('albums');
         all.sort((a, b) => (a.display_order || 1) - (b.display_order || 1));
 
@@ -420,23 +310,6 @@ class NicolasTecheiraDB {
             }
         }
 
-        if (this.supabaseConnected) {
-            try {
-                const { data, error } = await this.supabase
-                    .from('albums')
-                    .select('*')
-                    .eq('slug', slug)
-                    .single();
-
-                if (!error && data) {
-                    data.date = data.event_date || data.date;
-                    return data;
-                }
-            } catch (err) {
-                console.warn('[Supabase] Error getAlbumBySlug:', err);
-            }
-        }
-
         const all = await this.getAll('albums');
         return all.find(a => a.slug === slug) || null;
     }
@@ -453,23 +326,6 @@ class NicolasTecheiraDB {
                 }
             } catch (err) {
                 console.warn('[MariaDB] Error getAlbumById:', err);
-            }
-        }
-
-        if (this.supabaseConnected && this.supabase) {
-            try {
-                const { data, error } = await this.supabase
-                    .from('albums')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
-
-                if (!error && data) {
-                    data.date = data.event_date || data.date;
-                    return data;
-                }
-            } catch (err) {
-                console.warn('[Supabase] Error getAlbumById:', err);
             }
         }
 
@@ -504,35 +360,6 @@ class NicolasTecheiraDB {
             }
         }
 
-        if (this.supabaseConnected) {
-            try {
-                const payload = {
-                    title: albumData.title,
-                    slug: albumData.slug,
-                    description: albumData.description || '',
-                    category: albumData.category || 'Fiestas',
-                    photographer: albumData.photographer || 'Nicolas Techeira',
-                    price: Number(albumData.price || 4000),
-                    event_date: albumData.date || albumData.event_date || 'Reciente',
-                    status: albumData.status || 'draft',
-                    sort_order: Number(albumData.display_order || albumData.sort_order || 1),
-                    cover_url: albumData.cover_url || ''
-                };
-
-                const { data, error } = await this.supabase
-                    .from('albums')
-                    .insert(payload)
-                    .select()
-                    .single();
-
-                if (error) throw error;
-                return data;
-            } catch (err) {
-                console.error('[Supabase] Error al crear álbum en Supabase:', err);
-                throw err;
-            }
-        }
-
         // Fallback local
         const id = await this.insert('albums', {
             ...albumData,
@@ -562,32 +389,6 @@ class NicolasTecheiraDB {
             } catch (err) {
                 if (err.isAuthError) throw err;
                 console.warn('[MariaDB] Falló updateAlbum remoto:', err);
-            }
-        }
-
-        if (this.supabaseConnected) {
-            try {
-                const payload = { ...updates, updated_at: new Date().toISOString() };
-                if (payload.date) {
-                    payload.event_date = payload.date;
-                    delete payload.date;
-                }
-                if (payload.display_order) {
-                    payload.sort_order = payload.display_order;
-                }
-
-                const { data, error } = await this.supabase
-                    .from('albums')
-                    .update(payload)
-                    .eq('id', id)
-                    .select()
-                    .single();
-
-                if (error) throw error;
-                return data;
-            } catch (err) {
-                console.error('[Supabase] Error al actualizar álbum:', err);
-                throw err;
             }
         }
 
@@ -631,21 +432,6 @@ class NicolasTecheiraDB {
             }
         }
 
-        if (this.supabaseConnected) {
-            try {
-                const { error } = await this.supabase
-                    .from('albums')
-                    .delete()
-                    .eq('id', id);
-
-                if (error) throw error;
-                return true;
-            } catch (err) {
-                console.error('[Supabase] Error al eliminar álbum:', err);
-                throw err;
-            }
-        }
-
         const numId = Number(id);
         const photos = await this.getPhotosByAlbum(numId);
         for (const photo of photos) {
@@ -656,7 +442,7 @@ class NicolasTecheiraDB {
     }
 
     // =========================================================================
-    // OPERACIONES DE FOTOGRAFÍAS & SUPABASE STORAGE
+    // OPERACIONES DE FOTOGRAFÍAS (MARIADB + FALLBACK LOCAL)
     // =========================================================================
 
     async getPhotosByAlbum(albumId) {
@@ -671,21 +457,6 @@ class NicolasTecheiraDB {
                 }
             } catch (err) {
                 console.warn('[MariaDB] Error getPhotosByAlbum:', err);
-            }
-        }
-
-        if (this.supabaseConnected) {
-            try {
-                const { data, error } = await this.supabase
-                    .from('photos')
-                    .select('*')
-                    .eq('album_id', albumId)
-                    .order('sort_order', { ascending: true })
-                    .order('created_at', { ascending: true });
-
-                if (!error && data) return data;
-            } catch (err) {
-                console.warn('[Supabase] Error getPhotosByAlbum:', err);
             }
         }
 
@@ -731,31 +502,6 @@ class NicolasTecheiraDB {
             }
         }
 
-        if (this.supabaseConnected && this.supabase) {
-            try {
-                const payload = {
-                    album_id: albumId,
-                    storage_path: photoData.storage_path || `manual/${albumId}/${Date.now()}.jpg`,
-                    url: photoData.url,
-                    filename: photoData.filename || (photoData.alt_text ? `${photoData.alt_text}.jpg` : 'foto.jpg'),
-                    alt_text: photoData.alt_text || '',
-                    sort_order: Number(photoData.order || photoData.sort_order || 1)
-                };
-
-                const { data, error } = await this.supabase
-                    .from('photos')
-                    .insert(payload)
-                    .select()
-                    .single();
-
-                if (error) throw error;
-                return data;
-            } catch (err) {
-                console.error('[Supabase] Error en addPhotoToAlbum:', err);
-                throw err;
-            }
-        }
-
         // Fallback local en IndexedDB
         const photoObj = {
             album_id: (typeof albumId === 'string' && !isNaN(Number(albumId))) ? Number(albumId) : albumId,
@@ -787,21 +533,6 @@ class NicolasTecheiraDB {
             }
         }
 
-        if (this.supabaseConnected && this.supabase) {
-            try {
-                const { error } = await this.supabase
-                    .from('photos')
-                    .delete()
-                    .eq('id', photoId);
-
-                if (error) throw error;
-                return true;
-            } catch (err) {
-                console.error('[Supabase] Error al eliminar foto:', err);
-                throw err;
-            }
-        }
-
         const allPhotos = await this.getAll('photos');
         const match = allPhotos.find(p => String(p.id) === String(photoId));
         if (match) {
@@ -812,56 +543,6 @@ class NicolasTecheiraDB {
 
     async uploadPhotoFile(albumId, file, albumSlug = 'galeria') {
         await this.ensureReady();
-
-        if (this.supabaseConnected && this.supabase) {
-            try {
-                const cleanFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '')}`;
-                const storagePath = `${albumSlug}/${cleanFileName}`;
-
-                // 1. Subir a Supabase Storage
-                const { data: uploadData, error: uploadErr } = await this.supabase
-                    .storage
-                    .from(this.storageBucket)
-                    .upload(storagePath, file, {
-                        cacheControl: '3600',
-                        upsert: false
-                    });
-
-                if (uploadErr) throw uploadErr;
-
-                // 2. Obtener URL pública
-                const { data: publicUrlData } = this.supabase
-                    .storage
-                    .from(this.storageBucket)
-                    .getPublicUrl(storagePath);
-
-                const publicUrl = publicUrlData.publicUrl;
-
-                // 3. Insertar registro en tabla photos
-                const photoPayload = {
-                    album_id: albumId,
-                    storage_path: storagePath,
-                    url: publicUrl,
-                    filename: file.name,
-                    alt_text: file.name.replace(/\.[^/.]+$/, ''),
-                    file_size: file.size,
-                    mime_type: file.type || 'image/jpeg',
-                    sort_order: 1
-                };
-
-                const { data: photoData, error: dbErr } = await this.supabase
-                    .from('photos')
-                    .insert(photoPayload)
-                    .select()
-                    .single();
-
-                if (dbErr) throw dbErr;
-                return photoData;
-            } catch (err) {
-                console.error('[Supabase Storage] Error al subir foto:', err);
-                throw err;
-            }
-        }
 
         // Fallback local en Base64
         return new Promise((resolve, reject) => {
@@ -883,58 +564,17 @@ class NicolasTecheiraDB {
     }
 
     // =========================================================================
-    // AUTENTICACIÓN (SUPABASE AUTH + FALLBACK)
+    // AUTENTICACIÓN (MARIADB + FALLBACK LOCAL)
     // =========================================================================
 
     async hasAdminUser() {
         await this.ensureReady();
-
-        if (this.supabaseConnected && this.supabase) {
-            try {
-                const { count, error } = await this.supabase
-                    .from('admin_users')
-                    .select('*', { count: 'exact', head: true });
-
-                if (!error && count !== null) {
-                    return count > 0;
-                }
-            } catch (err) {
-                console.warn('[Supabase Auth] Falló consulta hasAdminUser:', err);
-            }
-        }
-
         const localCount = await this.count('admin_users');
         return localCount > 0;
     }
 
     async createFirstAdmin(email, password, name = 'Nicolas Techeira') {
         await this.ensureReady();
-
-        if (this.supabaseConnected && this.supabase) {
-            try {
-                // Registrar usuario en Supabase Auth
-                const { data: authData, error: authError } = await this.supabase.auth.signUp({
-                    email: email.trim().toLowerCase(),
-                    password: password
-                });
-
-                if (authError) throw authError;
-
-                // Reclamar rol de administrador en la tabla admin_users
-                const { error: claimErr } = await this.supabase.rpc('claim_initial_admin', {
-                    admin_name: name.trim()
-                });
-
-                if (claimErr) {
-                    console.warn('[Supabase] RPC claim_initial_admin no disponible o falló:', claimErr.message);
-                }
-
-                return authData.user;
-            } catch (err) {
-                console.error('[Supabase Auth] Error al registrar primer admin:', err);
-                throw err;
-            }
-        }
 
         // Registro local
         const hasAdmin = await this.hasAdminUser();
@@ -979,49 +619,6 @@ class NicolasTecheiraDB {
                 if (err.message.includes('Credenciales') || err.message.includes('Contraseña')) {
                     throw err;
                 }
-            }
-        }
-
-        if (this.supabaseConnected && this.supabase) {
-            try {
-                const { data, error } = await this.supabase.auth.signInWithPassword({
-                    email: cleanEmail,
-                    password: password
-                });
-
-                if (error) throw error;
-
-                // Verificar que el usuario tenga rol de administrador
-                const { data: adminRecord, error: adminErr } = await this.supabase
-                    .from('admin_users')
-                    .select('*')
-                    .eq('id', data.user.id)
-                    .single();
-
-                if (adminErr || !adminRecord) {
-                    // Si la tabla admin_users está vacía, intentar reclamar como primer admin
-                    const { count } = await this.supabase.from('admin_users').select('*', { count: 'exact', head: true });
-                    if (count === 0) {
-                        await this.supabase.rpc('claim_initial_admin', { admin_name: 'Nicolas Techeira' });
-                    } else {
-                        await this.supabase.auth.signOut();
-                        throw new Error('Acceso denegado: este usuario no posee rol de administrador de estudio.');
-                    }
-                }
-
-                const sessionData = {
-                    token: data.session.access_token,
-                    userId: data.user.id,
-                    email: data.user.email,
-                    name: (adminRecord && adminRecord.full_name) || 'Nicolas Techeira',
-                    expiresAt: Date.now() + (24 * 60 * 60 * 1000)
-                };
-
-                localStorage.setItem('picsel_admin_session', JSON.stringify(sessionData));
-                return sessionData;
-            } catch (err) {
-                console.warn('[Supabase Auth] Falló autenticación remota, probando local:', err.message);
-                // Si falla el login remoto pero hay coincidencia local, permitir acceso
             }
         }
 
@@ -1094,13 +691,6 @@ class NicolasTecheiraDB {
     }
 
     async logout() {
-        if (this.supabase && this.supabaseConnected) {
-            try {
-                await this.supabase.auth.signOut();
-            } catch (e) {
-                console.warn('Error al cerrar sesión en Supabase:', e);
-            }
-        }
         localStorage.removeItem('picsel_admin_session');
         return true;
     }

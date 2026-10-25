@@ -48,28 +48,6 @@ const server = http.createServer((req, res) => {
         return;
     }
 
-    // Endpoint seguro para exponer configuración pública al frontend
-    if (reqUrl === '/api/config') {
-        let supabaseUrl = 'https://asuepmdkhuetkndxsaaf.supabase.co';
-        let supabaseKey = 'sb_publishable_gMLIiwC28mUovg6m-49zZA_Op-iKZDv';
-        const envPath = path.join(PUBLIC_DIR, '.env');
-        if (fs.existsSync(envPath)) {
-            const lines = fs.readFileSync(envPath, 'utf-8').split('\n');
-            lines.forEach(line => {
-                const parts = line.split('=');
-                if (parts.length >= 2) {
-                    const key = parts[0].trim();
-                    const val = parts.slice(1).join('=').replace(/["'\r]/g, '').trim();
-                    if (key === 'SUPABASE_URL') supabaseUrl = val;
-                    if (key === 'SUPABASE_KEY') supabaseKey = val;
-                }
-            });
-        }
-        res.writeHead(200, { 'Content-Type': 'application/json; charset=UTF-8' });
-        res.end(JSON.stringify({ supabaseUrl, supabaseKey }));
-        return;
-    }
-
     // Enrutador de API REST MariaDB (Álbumes, Fotos, Autenticación, Salud)
     if (req.url.startsWith('/api/')) {
         if (typeof handleApiRequest === 'function') {
@@ -123,7 +101,7 @@ server.listen(PORT, async () => {
         if (dbStatus.ok) {
             console.log(`[MariaDB] ✔ Conectado exitosamente a '${dbStatus.database}' en ${dbStatus.host}`);
         } else {
-            console.log(`[MariaDB] ⚠ No conectado (${dbStatus.error}). Operando con fallback offline / Supabase.`);
+            console.log(`[MariaDB] ⚠ No conectado (${dbStatus.error}). Operando con fallback offline.`);
         }
     }
 });
