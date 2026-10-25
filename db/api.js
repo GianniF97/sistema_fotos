@@ -72,6 +72,27 @@ function verifyAdminSession(req) {
     return session;
 }
 
+// Verificación obligatoria de sesión de administración
+function requireAdminAuth(req, res) {
+    const authHeader = req.headers['authorization'] || '';
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+    if (!token) {
+        sendJson(res, 401, { ok: false, error: 'Autenticación requerida. Token no provisto.', code: 'UNAUTHORIZED' });
+        return null;
+    }
+    const session = activeSessions.get(token);
+    if (!session || Date.now() > session.expiresAt) {
+        if (session) activeSessions.delete(token);
+        sendJson(res, 401, { ok: false, error: 'Sesión inválida o expirada.', code: 'UNAUTHORIZED' });
+        return null;
+    }
+    if (session.role !== 'admin') {
+        sendJson(res, 403, { ok: false, error: 'Permisos insuficientes. Se requiere rol de administrador.', code: 'FORBIDDEN' });
+        return null;
+    }
+    return session;
+}
+
 async function handleApiRequest(req, res) {
     const method = req.method.toUpperCase();
     const [pathPart, queryPart] = req.url.split('?');
@@ -89,9 +110,22 @@ async function handleApiRequest(req, res) {
         return true;
     }
 
-    // 1. Estado de la base de datos MariaDB
+    // 1. Estado de la base de datos MariaDB / Salud del sistema
     if (pathPart === '/api/db/status' || pathPart === '/api/health') {
         const status = await checkConnection();
+        const adminSession = verifyAdminSession(req);
+
+        // Sin sesión de admin: respuesta genérica y segura que no filtra datos de infraestructura
+        if (!adminSession || adminSession.role !== 'admin') {
+            sendJson(res, status.ok ? 200 : 503, {
+                ok: status.ok,
+                status: status.ok ? 'healthy' : 'degraded',
+                timestamp: new Date().toISOString()
+            });
+            return true;
+        }
+
+        // Con sesión de admin: información de diagnóstico completa
         sendJson(res, status.ok ? 200 : 503, {
             ...status,
             provider: 'mariadb',
@@ -173,6 +207,13 @@ async function handleApiRequest(req, res) {
     if (pathPart === '/api/albums' && method === 'GET') {
         try {
             const showAll = query.get('all') === '1' || query.get('all') === 'true';
+            if (showAll) {
+                const adminSession = verifyAdminSession(req);
+                if (!adminSession || adminSession.role !== 'admin') {
+                    sendJson(res, 401, { ok: false, error: 'Se requiere sesión de administrador para ver borradores.', code: 'UNAUTHORIZED' });
+                    return true;
+                }
+            }
             const sql = `
                 SELECT 
                     a.id, a.slug, a.title, a.category, a.photographer, 
@@ -220,6 +261,13 @@ async function handleApiRequest(req, res) {
             }
 
             const album = albumRows[0];
+            if (album.status !== 'published') {
+                const adminSession = verifyAdminSession(req);
+                if (!adminSession || adminSession.role !== 'admin') {
+                    sendJson(res, 404, { ok: false, error: 'Álbum no encontrado.' });
+                    return true;
+                }
+            }
             const [photoRows] = await pool.query(
                 'SELECT * FROM photos WHERE album_id = ? ORDER BY sort_order ASC, id ASC',
                 [album.id]
@@ -257,6 +305,7 @@ async function handleApiRequest(req, res) {
 
     // 8. Crear Álbum
     if (pathPart === '/api/albums' && method === 'POST') {
+        if (!requireAdminAuth(req, res)) return true;
         try {
             const payload = await parseBody(req);
             const title = (payload.title || '').trim();
@@ -309,6 +358,7 @@ async function handleApiRequest(req, res) {
 
     // 9. Actualizar Álbum
     if (albumMatch && method === 'PUT') {
+        if (!requireAdminAuth(req, res)) return true;
         try {
             const albumId = parseInt(albumMatch[1], 10);
             const payload = await parseBody(req);
@@ -370,6 +420,7 @@ async function handleApiRequest(req, res) {
 
     // 10. Eliminar Álbum
     if (albumMatch && method === 'DELETE') {
+        if (!requireAdminAuth(req, res)) return true;
         try {
             const albumId = parseInt(albumMatch[1], 10);
             await pool.query('DELETE FROM albums WHERE id = ?', [albumId]);
@@ -383,6 +434,7 @@ async function handleApiRequest(req, res) {
 
     // 11. Agregar Fotografía(s)
     if (pathPart === '/api/photos' && method === 'POST') {
+        if (!requireAdminAuth(req, res)) return true;
         try {
             const payload = await parseBody(req);
             const album_id = parseInt(payload.album_id || payload.albumId, 10);
@@ -423,6 +475,7 @@ async function handleApiRequest(req, res) {
     // 12. Eliminar Fotografía
     const photoMatch = pathPart.match(/^\/api\/photos\/(\d+)$/);
     if (photoMatch && method === 'DELETE') {
+        if (!requireAdminAuth(req, res)) return true;
         try {
             const photoId = parseInt(photoMatch[1], 10);
             await pool.query('DELETE FROM photos WHERE id = ?', [photoId]);
@@ -684,5 +737,8 @@ async function handleApiRequest(req, res) {
 }
 
 module.exports = {
-    handleApiRequest
+    handleApiRequest,
+    activeSessions,
+    verifyAdminSession,
+    requireAdminAuth
 };

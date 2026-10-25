@@ -356,7 +356,9 @@ class NicolasTecheiraDB {
 
         if (this.mariadbConnected) {
             try {
-                const res = await fetch('/api/albums?all=1');
+                const res = await fetch('/api/albums?all=1', {
+                    headers: this.getAuthHeaders()
+                });
                 if (res.ok) {
                     const json = await res.json();
                     if (json.ok && Array.isArray(json.data)) {
@@ -482,7 +484,7 @@ class NicolasTecheiraDB {
             try {
                 const res = await fetch('/api/albums', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify(albumData)
                 });
                 if (res.ok) {
@@ -539,7 +541,7 @@ class NicolasTecheiraDB {
             try {
                 const res = await fetch(`/api/albums/${encodeURIComponent(id)}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify(updates)
                 });
                 if (res.ok) {
@@ -603,7 +605,10 @@ class NicolasTecheiraDB {
 
         if (this.mariadbConnected) {
             try {
-                const res = await fetch(`/api/albums/${encodeURIComponent(id)}`, { method: 'DELETE' });
+                const res = await fetch(`/api/albums/${encodeURIComponent(id)}`, {
+                    method: 'DELETE',
+                    headers: this.getAuthHeaders()
+                });
                 if (res.ok) return true;
             } catch (err) {
                 console.warn('[MariaDB] Falló deleteAlbum:', err);
@@ -688,7 +693,7 @@ class NicolasTecheiraDB {
             try {
                 const res = await fetch('/api/photos', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify({
                         album_id: albumId,
                         url: photoData.url,
@@ -748,7 +753,10 @@ class NicolasTecheiraDB {
 
         if (this.mariadbConnected) {
             try {
-                const res = await fetch(`/api/photos/${encodeURIComponent(photoId)}`, { method: 'DELETE' });
+                const res = await fetch(`/api/photos/${encodeURIComponent(photoId)}`, {
+                    method: 'DELETE',
+                    headers: this.getAuthHeaders()
+                });
                 if (res.ok) return true;
             } catch (err) {
                 console.warn('[MariaDB] Error al eliminar foto:', err);
@@ -1034,6 +1042,15 @@ class NicolasTecheiraDB {
             localStorage.removeItem('picsel_admin_session');
             return null;
         }
+    }
+
+    getAuthHeaders(customHeaders = {}) {
+        const session = this.validateSession();
+        const headers = { ...customHeaders };
+        if (session && session.token) {
+            headers['Authorization'] = `Bearer ${session.token}`;
+        }
+        return headers;
     }
 
     async logout() {
