@@ -507,16 +507,105 @@ async function handleApiRequest(req, res) {
     if (pathPart === '/api/checkout/preference' && method === 'POST') {
         try {
             const payload = await parseBody(req);
-            const { items = [], customerName = '', customerEmail = '', customerPhone = '', albumId = null } = payload;
+            const { items = [], customerName = '', customerEmail = '', customerPhone = '' } = payload;
 
-            if (!items || items.length === 0) {
+            // 1. Validar datos del comprador
+            const cleanName = (customerName || '').trim();
+            const cleanEmail = (customerEmail || '').trim().toLowerCase();
+            const cleanPhone = (customerPhone || '').trim();
+
+            if (!cleanName || cleanName.length < 2 || cleanName.length > 100) {
+                sendJson(res, 400, { ok: false, error: 'Nombre de cliente inválido (debe tener entre 2 y 100 caracteres).' });
+                return true;
+            }
+
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!cleanEmail || cleanEmail.length > 120 || !emailRegex.test(cleanEmail)) {
+                sendJson(res, 400, { ok: false, error: 'Correo electrónico de cliente inválido.' });
+                return true;
+            }
+
+            if (cleanPhone && (cleanPhone.length > 30 || !/^[0-9+\s()-]+$/.test(cleanPhone))) {
+                sendJson(res, 400, { ok: false, error: 'Número de teléfono inválido.' });
+                return true;
+            }
+
+            // 2. Validar lista de ítems / fotos solicitadas
+            if (!Array.isArray(items) || items.length === 0) {
                 sendJson(res, 400, { ok: false, error: 'La selección de fotografías no puede estar vacía.' });
                 return true;
             }
 
-            // Calcular subtotales y descuentos por volumen
-            const count = items.length;
-            const subtotal = items.reduce((sum, it) => sum + Number(it.price || 4000), 0);
+            const MAX_ITEMS_PER_ORDER = 200;
+            if (items.length > MAX_ITEMS_PER_ORDER) {
+                sendJson(res, 400, { ok: false, error: `La orden supera el límite máximo permitido de ${MAX_ITEMS_PER_ORDER} fotografías.` });
+                return true;
+            }
+
+            // Extraer y validar IDs
+            const photoIds = [];
+            const seenIds = new Set();
+            for (const it of items) {
+                const id = parseInt(it && typeof it === 'object' ? it.id : it, 10);
+                if (isNaN(id) || id <= 0) {
+                    sendJson(res, 400, { ok: false, error: 'Identificador de fotografía inválido.' });
+                    return true;
+                }
+                if (seenIds.has(id)) {
+                    sendJson(res, 400, { ok: false, error: `Fotografía duplicada en la selección (ID: ${id}).` });
+                    return true;
+                }
+                seenIds.add(id);
+                photoIds.push(id);
+            }
+
+            // 3. Consultar precios y disponibilidad autoritativos en Base de Datos
+            const placeholders = photoIds.map(() => '?').join(',');
+            const [dbPhotos] = await pool.query(
+                `SELECT p.id AS photo_id, p.album_id, a.price AS album_price, a.status AS album_status
+                 FROM photos p
+                 JOIN albums a ON p.album_id = a.id
+                 WHERE p.id IN (${placeholders})`,
+                photoIds
+            );
+
+            if (dbPhotos.length !== photoIds.length) {
+                sendJson(res, 400, { ok: false, error: 'Una o más fotografías solicitadas no existen.' });
+                return true;
+            }
+
+            // Mapear fotos por id y verificar que los álbumes estén publicados
+            const photoMap = new Map();
+            for (const p of dbPhotos) {
+                if (p.album_status !== 'published') {
+                    sendJson(res, 400, { ok: false, error: 'Una o más fotografías pertenecen a una colección no publicada o en borrador.' });
+                    return true;
+                }
+                photoMap.set(p.photo_id, p);
+            }
+
+            // 4. Calcular subtotales en centavos enteros para evitar errores de redondeo
+            let subtotalCents = 0;
+            const verifiedItems = [];
+
+            for (const id of photoIds) {
+                const photoInfo = photoMap.get(id);
+                const albumPrice = parseFloat(photoInfo.album_price);
+                if (isNaN(albumPrice) || albumPrice < 0) {
+                    sendJson(res, 500, { ok: false, error: 'Error en la configuración de precio del álbum.' });
+                    return true;
+                }
+                const itemPriceCents = Math.round(albumPrice * 100);
+                subtotalCents += itemPriceCents;
+                verifiedItems.push({
+                    id: photoInfo.photo_id,
+                    albumId: photoInfo.album_id,
+                    price: Number((itemPriceCents / 100).toFixed(2))
+                });
+            }
+
+            // Descuentos por volumen calculados en el servidor
+            const count = photoIds.length;
             let discountRate = 0;
             let discountLabel = 'Precio regular';
 
@@ -531,8 +620,12 @@ async function handleApiRequest(req, res) {
                 discountLabel = 'Pack 5 Recuerdos (15% OFF)';
             }
 
-            const discountAmount = Math.round(subtotal * discountRate);
-            const totalAmount = Math.max(0, subtotal - discountAmount);
+            const discountCents = Math.round(subtotalCents * discountRate);
+            const totalCents = Math.max(0, subtotalCents - discountCents);
+
+            const subtotal = Number((subtotalCents / 100).toFixed(2));
+            const discountAmount = Number((discountCents / 100).toFixed(2));
+            const totalAmount = Number((totalCents / 100).toFixed(2));
 
             // Generar identificadores únicos de orden y token seguro de descarga
             const orderNumber = `NT-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 900 + 100)}`;
@@ -540,25 +633,25 @@ async function handleApiRequest(req, res) {
 
             let orderId = Date.now();
 
-            // Guardar en MySQL si la conexión está disponible
+            // Guardar en MySQL
             try {
                 const [orderResult] = await pool.query(
                     `INSERT INTO orders 
                      (order_number, token, customer_name, customer_email, customer_phone, subtotal, discount_amount, discount_label, total_amount, payment_method, payment_status)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'mercadopago', 'pending')`,
-                    [orderNumber, token, customerName, customerEmail, customerPhone, subtotal, discountAmount, discountLabel, totalAmount]
+                    [orderNumber, token, cleanName, cleanEmail, cleanPhone, subtotal, discountAmount, discountLabel, totalAmount]
                 );
                 orderId = orderResult.insertId;
 
-                for (const it of items) {
+                for (const it of verifiedItems) {
                     await pool.query(
                         `INSERT INTO order_items (order_id, photo_id, album_id, price)
                          VALUES (?, ?, ?, ?)`,
-                        [orderId, parseInt(it.id, 10) || 0, parseInt(albumId, 10) || 0, Number(it.price || 4000)]
+                        [orderId, it.id, it.albumId, it.price]
                     );
                 }
             } catch (dbErr) {
-                console.warn('Advertencia DB al guardar orden (continuando con orden en memoria/offline):', dbErr.message);
+                console.warn('Advertencia DB al guardar orden:', dbErr.message);
             }
 
             // Mercado Pago Checkout Pro Integration
@@ -584,8 +677,8 @@ async function handleApiRequest(req, res) {
                                 }
                             ],
                             payer: {
-                                name: customerName || 'Cliente',
-                                email: customerEmail || 'cliente@estudio.com'
+                                name: cleanName,
+                                email: cleanEmail
                             },
                             back_urls: {
                                 success: `${req.headers.origin || 'http://localhost:3000'}/#/order/success?token=${token}`,
@@ -618,7 +711,7 @@ async function handleApiRequest(req, res) {
                     totalAmount,
                     preferenceId,
                     initPoint,
-                    items
+                    items: verifiedItems
                 }
             });
             return true;

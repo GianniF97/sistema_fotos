@@ -1188,17 +1188,29 @@ class NicolasTecheiraDB {
     async createCheckoutPreference(orderData) {
         if (this.mariadbConnected) {
             try {
+                // El cliente solo envía IDs; el servidor calcula precios, descuentos y total
+                const cleanPayload = {
+                    items: (orderData.items || []).map(it => ({ id: it.id })),
+                    customerName: orderData.customerName || 'Cliente Nicolas Techeira',
+                    customerEmail: orderData.customerEmail || 'cliente@estudio.com',
+                    customerPhone: orderData.customerPhone || '',
+                    isFullAlbum: Boolean(orderData.isFullAlbum)
+                };
                 const res = await fetch('/api/checkout/preference', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(orderData)
+                    body: JSON.stringify(cleanPayload)
                 });
                 if (res.ok) {
                     const json = await res.json();
                     return json.data;
+                } else {
+                    const errJson = await res.json().catch(() => ({}));
+                    throw new Error(errJson.error || 'Error al procesar la orden en el servidor.');
                 }
             } catch (err) {
-                console.warn('[DB] Falló llamada a /api/checkout/preference:', err);
+                console.error('[DB] Error en /api/checkout/preference:', err);
+                throw err;
             }
         }
 
