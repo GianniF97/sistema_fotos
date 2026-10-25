@@ -6,6 +6,7 @@
 
 const crypto = require('crypto');
 const { pool, checkConnection, dbConfig } = require('./connection');
+const { calculateOrderPricing, PRICING_CONFIG } = require('./pricing');
 
 // Almacén de sesiones en memoria para administradores
 const activeSessions = new Map();
@@ -584,48 +585,47 @@ async function handleApiRequest(req, res) {
                 photoMap.set(p.photo_id, p);
             }
 
-            // 4. Calcular subtotales en centavos enteros para evitar errores de redondeo
-            let subtotalCents = 0;
-            const verifiedItems = [];
+            // 4. Validar disponibilidad de pasarela de pago / modo simulado
+            const hasMpToken = Boolean(process.env.MERCADOPAGO_ACCESS_TOKEN);
+            const allowSimulated = process.env.ALLOW_SIMULATED_PAYMENTS === 'true' && process.env.NODE_ENV !== 'production';
 
-            for (const id of photoIds) {
-                const photoInfo = photoMap.get(id);
-                const albumPrice = parseFloat(photoInfo.album_price);
-                if (isNaN(albumPrice) || albumPrice < 0) {
-                    sendJson(res, 500, { ok: false, error: 'Error en la configuración de precio del álbum.' });
-                    return true;
+            if (!hasMpToken && !allowSimulated) {
+                sendJson(res, 503, {
+                    ok: false,
+                    error: 'Servicio de pagos temporalmente no disponible (pasarela de pagos no configurada).',
+                    code: 'PAYMENT_GATEWAY_UNAVAILABLE'
+                });
+                return true;
+            }
+
+            // 5. Detección segura de álbum completo en servidor (nunca confiando en el cliente)
+            let isFullAlbum = false;
+            const uniqueAlbumIds = new Set(dbPhotos.map(p => p.album_id));
+            if (uniqueAlbumIds.size === 1) {
+                const singleAlbumId = Array.from(uniqueAlbumIds)[0];
+                const [albumTotalRows] = await pool.query(
+                    'SELECT COUNT(*) AS total FROM photos WHERE album_id = ?',
+                    [singleAlbumId]
+                );
+                const totalInAlbum = Number(albumTotalRows[0]?.total || 0);
+                if (totalInAlbum > 0 && photoIds.length >= totalInAlbum) {
+                    isFullAlbum = true;
                 }
-                const itemPriceCents = Math.round(albumPrice * 100);
-                subtotalCents += itemPriceCents;
-                verifiedItems.push({
+            }
+
+            // 6. Calcular totales y descuentos con el módulo de precios centralizado
+            const verifiedItems = photoIds.map(id => {
+                const photoInfo = photoMap.get(id);
+                return {
                     id: photoInfo.photo_id,
                     albumId: photoInfo.album_id,
-                    price: Number((itemPriceCents / 100).toFixed(2))
-                });
-            }
+                    albumPrice: photoInfo.album_price,
+                    price: Number(parseFloat(photoInfo.album_price).toFixed(2))
+                };
+            });
 
-            // Descuentos por volumen calculados en el servidor
-            const count = photoIds.length;
-            let discountRate = 0;
-            let discountLabel = 'Precio regular';
-
-            if (count >= 20 || payload.isFullAlbum) {
-                discountRate = 0.35;
-                discountLabel = 'Pack Colección Completa (35% OFF)';
-            } else if (count >= 10) {
-                discountRate = 0.25;
-                discountLabel = 'Pack Selección Especial (25% OFF)';
-            } else if (count >= 5) {
-                discountRate = 0.15;
-                discountLabel = 'Pack 5 Recuerdos (15% OFF)';
-            }
-
-            const discountCents = Math.round(subtotalCents * discountRate);
-            const totalCents = Math.max(0, subtotalCents - discountCents);
-
-            const subtotal = Number((subtotalCents / 100).toFixed(2));
-            const discountAmount = Number((discountCents / 100).toFixed(2));
-            const totalAmount = Number((totalCents / 100).toFixed(2));
+            const pricing = calculateOrderPricing(verifiedItems, isFullAlbum);
+            const { subtotal, discountAmount, discountLabel, totalAmount, count } = pricing;
 
             // Generar identificadores únicos de orden y token seguro de descarga
             const orderNumber = `NT-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 900 + 100)}`;
@@ -693,6 +693,15 @@ async function handleApiRequest(req, res) {
                     const mpData = await mpRes.json();
                     preferenceId = mpData.id;
                     initPoint = mpData.init_point || mpData.sandbox_init_point;
+
+                    // Asociar mercadopago_preference_id a la orden en BD para trazabilidad en webhook
+                    if (preferenceId) {
+                        try {
+                            await pool.query('UPDATE orders SET mercadopago_preference_id = ? WHERE id = ?', [preferenceId, orderId]);
+                        } catch (prefUpdateErr) {
+                            console.warn('Advertencia al vincular preference_id:', prefUpdateErr.message);
+                        }
+                    }
                 } catch (mpErr) {
                     console.error('Error al generar preferencia en Mercado Pago:', mpErr);
                 }

@@ -12,7 +12,8 @@ const originalPoolQuery = pool.query;
 const mockDb = {
     albums: [
         { id: 1, slug: 'boda-ana-juan', title: 'Boda Ana y Juan', status: 'published', price: 5000.00 },
-        { id: 2, slug: 'xv-sofia', title: 'XV Sofia (Borrador)', status: 'draft', price: 6000.00 }
+        { id: 2, slug: 'xv-sofia', title: 'XV Sofia (Borrador)', status: 'draft', price: 6000.00 },
+        { id: 3, slug: 'album-chico', title: 'Álbum Chico (3 fotos)', status: 'published', price: 4000.00 }
     ],
     photos: [
         { id: 101, album_id: 1, filename: 'foto101.jpg', url: 'https://example.com/101.jpg' },
@@ -20,19 +21,26 @@ const mockDb = {
         { id: 103, album_id: 1, filename: 'foto103.jpg', url: 'https://example.com/103.jpg' },
         { id: 104, album_id: 1, filename: 'foto104.jpg', url: 'https://example.com/104.jpg' },
         { id: 105, album_id: 1, filename: 'foto105.jpg', url: 'https://example.com/105.jpg' },
-        { id: 201, album_id: 2, filename: 'foto201_draft.jpg', url: 'https://example.com/201.jpg' } // En álbum borrador
+        { id: 106, album_id: 1, filename: 'foto106.jpg', url: 'https://example.com/106.jpg' },
+        { id: 107, album_id: 1, filename: 'foto107.jpg', url: 'https://example.com/107.jpg' },
+        { id: 201, album_id: 2, filename: 'foto201_draft.jpg', url: 'https://example.com/201.jpg' }, // En álbum borrador
+        { id: 301, album_id: 3, filename: 'foto301.jpg', url: 'https://example.com/301.jpg' },
+        { id: 302, album_id: 3, filename: 'foto302.jpg', url: 'https://example.com/302.jpg' },
+        { id: 303, album_id: 3, filename: 'foto303.jpg', url: 'https://example.com/303.jpg' }
     ],
     orders: [],
     orderItems: []
 };
 
 test.before(async () => {
+    process.env.ALLOW_SIMULATED_PAYMENTS = 'true';
+    process.env.NODE_ENV = 'test';
+
     pool.query = async (sql, params = []) => {
         const lowerSql = sql.toLowerCase();
 
         // Consulta de fotos y álbumes para cálculo autoritativo de precios
         if (lowerSql.includes('from photos p') && lowerSql.includes('join albums a')) {
-            // WHERE p.id IN (...)
             const requestedIds = params.map(Number);
             const rows = [];
             for (const id of requestedIds) {
@@ -52,11 +60,23 @@ test.before(async () => {
             return [rows];
         }
 
+        // Conteo de fotos en álbum para validación de álbum completo
+        if (lowerSql.includes('select count(*) as total from photos where album_id = ?')) {
+            const albumId = Number(params[0]);
+            const total = mockDb.photos.filter(p => p.album_id === albumId).length;
+            return [[{ total }]];
+        }
+
         // Inserción en orders
         if (lowerSql.includes('insert into orders')) {
             const newId = mockDb.orders.length + 1;
             mockDb.orders.push({ id: newId, params });
             return [{ insertId: newId }];
+        }
+
+        // Actualización de mercadopago_preference_id
+        if (lowerSql.includes('update orders set mercadopago_preference_id = ?')) {
+            return [{ affectedRows: 1 }];
         }
 
         // Inserción en order_items
@@ -92,6 +112,7 @@ test.before(async () => {
 
 test.after(() => {
     pool.query = originalPoolQuery;
+    delete process.env.ALLOW_SIMULATED_PAYMENTS;
     if (server) server.close();
 });
 
@@ -250,4 +271,71 @@ test('SEC-03: Cálculo de pack de descuentos por volumen en el servidor', async 
     assert.equal(data.data.discountAmount, 3750);
     assert.equal(data.data.totalAmount, 21250);
     assert.match(data.data.discountLabel, /15%/);
+});
+
+test('SEC-03: Detección segura de álbum completo en servidor (ignora isFullAlbum falso del cliente)', async () => {
+    // Caso A: Cliente envía solo 1 foto y declara falsamente isFullAlbum: true
+    const falseFullPayload = {
+        customerName: 'Cliente Tramposo',
+        customerEmail: 'tramposo@test.com',
+        isFullAlbum: true,
+        items: [{ id: 101 }] // Solo 1 foto de un álbum de 5
+    };
+
+    const resA = await fetch(`${baseUrl}/api/checkout/preference`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(falseFullPayload)
+    });
+    const dataA = await resA.json();
+    assert.equal(resA.status, 201);
+    assert.equal(dataA.data.discountAmount, 0, 'No debe aplicar descuento de álbum completo si solo tiene 1 foto');
+    assert.equal(dataA.data.discountLabel, 'Precio regular');
+
+    // Caso B: Cliente compra las 3 fotos del álbum 3 (que tiene exactamente 3 fotos en total)
+    // El servidor debe detectar automáticamente que es el álbum completo y aplicar 35%
+    const trueFullPayload = {
+        customerName: 'Comprador Álbum Completo',
+        customerEmail: 'completo@test.com',
+        items: [{ id: 301 }, { id: 302 }, { id: 303 }] // 3 de 3 fotos del álbum 3 ($4000 c/u = $12000)
+    };
+
+    const resB = await fetch(`${baseUrl}/api/checkout/preference`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(trueFullPayload)
+    });
+    const dataB = await resB.json();
+    assert.equal(resB.status, 201);
+    assert.equal(dataB.data.subtotal, 12000);
+    assert.equal(dataB.data.discountAmount, 4200, 'Debe aplicar 35% de descuento por álbum completo detectado por el servidor');
+    assert.equal(dataB.data.totalAmount, 7800);
+    assert.match(dataB.data.discountLabel, /Colecci[oó]n Completa|35%/i);
+});
+
+test('SEC-03: Falla con 503 si la pasarela de pagos no está configurada y el modo simulado está deshabilitado', async () => {
+    delete process.env.ALLOW_SIMULATED_PAYMENTS;
+    const oldMpToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+    delete process.env.MERCADOPAGO_ACCESS_TOKEN;
+
+    const payload = {
+        customerName: 'Cliente Real',
+        customerEmail: 'cliente@test.com',
+        items: [{ id: 101 }]
+    };
+
+    const res = await fetch(`${baseUrl}/api/checkout/preference`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    assert.equal(res.status, 503, 'Debe responder 503 cuando la pasarela no está configurada');
+    assert.equal(data.ok, false);
+    assert.equal(data.code, 'PAYMENT_GATEWAY_UNAVAILABLE');
+
+    // Restaurar flags para los demás tests
+    process.env.ALLOW_SIMULATED_PAYMENTS = 'true';
+    if (oldMpToken) process.env.MERCADOPAGO_ACCESS_TOKEN = oldMpToken;
 });
