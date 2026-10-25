@@ -20,3 +20,10 @@ _papelera/
 Thumbs.db
 __pycache__/
 *.pyc
+
+# Almacenamiento privado de originales y subidas publicas
+storage/originals/*
+!storage/originals/.gitkeep
+frontend/uploads/**
+!frontend/uploads/**/
+!frontend/uploads/**/.gitkeep

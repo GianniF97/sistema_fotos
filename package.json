@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "test": "node --test tests/*.test.js",
     "db:init": "node scripts/init-db.js",
     "db:seed": "node scripts/seed-db.js"
   },
@@ -20,7 +21,7 @@
   "author": "Nicolas Techeira",
   "license": "ISC",
   "dependencies": {
-    "dotenv": "^16.4.7",
-    "mysql2": "^3.12.0"
+    "dotenv": "18.0.9",
+    "mysql2": "3.24.6"
   }
 }
