@@ -176,21 +176,21 @@ html.dark .logo-light-theme-visible {
 
 /* Logotipo Tipográfico Complementario */
 .brand-logotype-text {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-weight: 500;
-    font-size: 1.35rem;
+    font-family: 'Space Grotesk', -apple-system, sans-serif;
+    font-weight: 700;
+    font-size: 1.18rem;
     line-height: 1.1;
-    letter-spacing: 0.02em;
+    letter-spacing: -0.01em;
     color: var(--text-primary);
 }
 
 .brand-logotype-sub {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.65rem;
-    font-weight: 500;
-    letter-spacing: 0.28em;
+    font-weight: 600;
+    letter-spacing: 0.32em;
     text-transform: uppercase;
-    color: var(--accent-bronze);
+    color: var(--accent-teal);
     display: block;
     margin-top: 2px;
 }
