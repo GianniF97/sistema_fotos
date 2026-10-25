@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviso Legal & Derechos de Imagen — Nicolas Techeira Fotografías</title>
+    <meta name="description" content="Aviso legal, propiedad intelectual y régimen de derechos de imagen en eventos conforme al Código Civil y Comercial de la Nación Argentina.">
+    <link rel="canonical" href="aviso-legal.html">
+    <link rel="icon" type="image/png" href="logo-mark-dark.png">
+
+    <!-- Tipografías Oficiales: Space Grotesk & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        graphite: { DEFAULT: '#0E1114', surface: '#14181C', border: '#272F36' },
+                        teal: { DEFAULT: '#2DD4BF', dark: '#0F766E' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Hojas de Estilo del Proyecto -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Prevención de destello de tema (FOUC) -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('nt_theme') || localStorage.getItem('picsel_theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+</head>
+<body class="bg-[#F4F7F8] dark:bg-[#0E1114] text-[#14181C] dark:text-[#E8EEF0] font-sans antialiased min-h-screen flex flex-col selection:bg-[#2DD4BF] selection:text-[#0E1114]">
+
+    <!-- ========================================== -->
+    <!-- CABECERA INSTITUCIONAL                     -->
+    <!-- ========================================== -->
+    <header class="sticky top-0 z-40 backdrop-blur-md bg-[#F4F7F8]/90 dark:bg-[#0E1114]/90 border-b border-[#DDE4E7] dark:border-[#272F36]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-8 h-16 sm:h-20 flex items-center justify-between">
+            <a href="index.html#/" class="brand-logo-container group" title="Volver a la galería">
+                <img src="logo-mark-dark.png" alt="Nicolas Techeira" class="brand-logo-mark logo-light-theme-visible">
+                <img src="logo-mark-light.png" alt="Nicolas Techeira" class="brand-logo-mark logo-dark-theme-visible">
+                <div class="flex flex-col min-w-0">
+                    <span class="brand-logotype-text group-hover:text-[#0F766E] dark:group-hover:text-[#2DD4BF] transition-colors">
+                        Nicolas Techeira
+                    </span>
+                    <span class="brand-logotype-sub">
+                        Fotografías
+                    </span>
+                </div>
+            </a>
+
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                <button id="themeToggleBtn" onclick="toggleLocalTheme()" class="p-2 rounded-sm text-[#14181C] dark:text-[#E8EEF0] hover:bg-black/5 dark:hover:bg-white/5 transition-colors" title="Cambiar tema">
+                    <i id="themeIcon" data-lucide="moon" class="w-4 h-4 text-[#0F766E] dark:text-[#2DD4BF]"></i>
+                </button>
+                <a href="index.html#/" class="px-3.5 py-1.5 border border-[#DDE4E7] dark:border-[#272F36] hover:border-[#0F766E] dark:hover:border-[#2DD4BF] text-xs font-semibold uppercase tracking-wider transition-all flex items-center space-x-1.5 rounded-sm">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                    <span>Volver a la Tienda</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- CONTENIDO EDITORIAL DE AVISO LEGAL         -->
+    <!-- ========================================== -->
+    <main class="flex-1 py-10 sm:py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-8">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
+                
+                <!-- Barra Lateral de Navegación del Índice -->
+                <aside class="lg:col-span-4 hidden lg:block">
+                    <div class="sticky top-28 p-6 bg-white dark:bg-[#14181C] border border-[#DDE4E7] dark:border-[#272F36] rounded-sm space-y-5">
+                        <div class="border-b border-black/5 dark:border-white/5 pb-3">
+                            <span class="text-[10px] uppercase tracking-widest text-[#0F766E] dark:text-[#2DD4BF] font-semibold block mb-1">Información Legal</span>
+                            <h2 class="font-editorial text-lg font-bold">Índice del Aviso Legal</h2>
+                        </div>
+                        
+                        <nav class="space-y-1.5 text-xs">
+                            <a href="#aviso-1" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">1. Titularidad del Sitio Web</a>
+                            <a href="#aviso-2" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">2. Objeto de la Plataforma</a>
+                            <a href="#aviso-3" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">3. Propiedad Intelectual y Marcas</a>
+                            <a href="#aviso-4" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">4. Derechos de Imagen (Art. 53 CCyCN)</a>
+                            <a href="#aviso-5" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">5. Procedimiento para Retiro de Fotos</a>
+                            <a href="#aviso-6" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">6. Enlaces a Sitios de Terceros</a>
+                            <a href="#aviso-7" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">7. Legislación y Tribunales Competentes</a>
+                        </nav>
+
+                        <div class="pt-3 border-t border-black/5 dark:border-white/5 space-y-2 text-[11px] text-stone">
+                            <p><strong>Actualizado:</strong> <span data-legal="lastUpdated">Octubre 2026</span></p>
+                            <a href="retiro-de-fotos.html" class="inline-flex items-center space-x-1.5 text-[#0F766E] dark:text-[#2DD4BF] font-semibold hover:underline pt-1">
+                                <i data-lucide="user-x" class="w-3.5 h-3.5"></i>
+                                <span>Solicitar retiro de una foto</span>
+                            </a>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Columna Principal -->
+                <article class="lg:col-span-8 space-y-10">
+                    
+                    <div class="border-b border-[#DDE4E7] dark:border-[#272F36] pb-8 space-y-4">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="w-2 h-2 rounded-full bg-[#2DD4BF]"></span>
+                            <span class="text-xs uppercase tracking-[0.25em] text-[#0F766E] dark:text-[#2DD4BF] font-semibold">Régimen Jurídico & Derechos de Imagen</span>
+                        </div>
+                        <h1 class="font-editorial text-3xl sm:text-5xl font-medium tracking-tight">Aviso Legal</h1>
+                        <p class="text-stone text-sm leading-relaxed max-w-2xl">
+                            Información de identificación legal, protección de propiedad intelectual y protocolo de respeto irrestricto al derecho a la propia imagen de las personas fotografiadas en coberturas y eventos sociales o culturales.
+                        </p>
+                    </div>
+
+                    <!-- Sección 1 -->
+                    <section id="aviso-1" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">01.</span>
+                            <span>Titularidad del Sitio Web</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                En cumplimiento de los deberes de información previa del comercio electrónico en la República Argentina, se informa que este sitio es operado por <strong class="text-charcoal dark:text-ivory" data-legal="legalName">[RAZÓN SOCIAL / NOMBRE COMERCIAL]</strong>, CUIT N.º <strong class="text-charcoal dark:text-ivory" data-legal="cuit">[CUIT]</strong>, con domicilio legal en <span data-legal="legalAddress">[DOMICILIO LEGAL]</span>.
+                            </p>
+                            <p>
+                                Contacto institucional y atención al público: <a href="#" data-legal="contactEmail" class="text-[#0F766E] dark:text-[#2DD4BF] underline font-medium">[CORREO DE CONTACTO Y ATENCIÓN AL CONSUMIDOR]</a>.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 2 -->
+                    <section id="aviso-2" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">02.</span>
+                            <span>Objeto de la Plataforma</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                La plataforma tiene por objeto la exhibición editorial del trabajo artístico y profesional del fotógrafo Nicolas Techeira, y la comercialización en línea de copias digitales originales en alta fidelidad de eventos sociales, culturales, deportivos, ballet y coberturas oficiales.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 3 -->
+                    <section id="aviso-3" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">03.</span>
+                            <span>Propiedad Intelectual y Derechos de Autor</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                El diseño visual, la identidad de marca, logotipos, código fuente, interfaz, textos y la totalidad de las fotografías presentes en este dominio son creaciones protegidas por la <strong>Ley N.º 11.723 de Propiedad Intelectual</strong> de la República Argentina y convenios internacionales.
+                            </p>
+                            <p>
+                                Queda expresamente prohibida la reproducción, duplicación, distribución masiva, scraping o comunicación pública no autorizada con fines de lucro de los contenidos de este sitio sin la previa autorización por escrito del titular.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 4: Derechos de Imagen -->
+                    <section id="aviso-4" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">04.</span>
+                            <span>Derechos de Imagen de las Personas Fotografiadas (Art. 53 CCyCN)</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-3">
+                            <!-- REVISAR CON ABOGADO: Encuadre de cobertura de eventos públicos y espectáculos artísticos según Art. 53 incisos a y b -->
+                            <p>
+                                El <strong>artículo 53 del Código Civil y Comercial de la Nación (CCyCN)</strong> tutela el derecho personalísimo a la propia imagen, disponiendo que para captar o reproducir la imagen o la voz de una persona es menester su consentimiento, salvo supuestos expresos de excepción legal, tales como:
+                            </p>
+                            <ul class="list-disc pl-5 space-y-1 text-xs text-stone">
+                                <li><em>Que la persona participe en actos públicos o eventos de concurrencia pública.</em></li>
+                                <li><em>Que exista un interés científico, cultural o educacional prioritario y se tomen las debidas precauciones para evitar un daño innecesario.</em></li>
+                                <li><em>Que la cobertura fotográfica se enmarque en coberturas oficiales contratadas por los organizadores del evento en el que los asistentes participan voluntariamente.</em></li>
+                            </ul>
+                            <p>
+                                Nicolas Techeira realiza coberturas con estrictos criterios de respeto, profesionalismo y valor estético, buscando enaltecer la memoria de momentos compartidos (fiestas de colectividades, ballets, graduaciones y celebraciones familiares).
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 5: Retiro de Fotos -->
+                    <section id="aviso-5" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">05.</span>
+                            <span>Procedimiento Ágil para el Retiro o Supresión de Fotografías</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-3">
+                            <p>
+                                Sin perjuicio del marco de cobertura del evento, <strong>respetamos de manera absoluta la privacidad y voluntad individual de toda persona</strong>.
+                            </p>
+                            <div class="p-5 bg-white dark:bg-[#14181C] border border-[#2DD4BF]/40 rounded-sm space-y-3">
+                                <div class="flex items-center space-x-2">
+                                    <i data-lucide="shield" class="w-5 h-5 text-[#0F766E] dark:text-[#2DD4BF]"></i>
+                                    <span class="font-semibold text-xs text-charcoal dark:text-ivory uppercase tracking-wider">Protocolo de Atención Inmediata</span>
+                                </div>
+                                <p class="text-xs text-stone leading-relaxed">
+                                    Si aparecés en una fotografía exhibida en este sitio o sos padre, madre o tutor legal de un menor que aparece en ella y deseás que la imagen sea <strong>retirada o difuminada del catálogo público</strong>, podés solicitarlo de manera directa, gratuita y sin ninguna traba burocrática completando nuestro formulario especializado:
+                                </p>
+                                <a href="retiro-de-fotos.html" class="inline-flex items-center space-x-2 px-4 py-2.5 bg-[#0F766E] dark:bg-[#2DD4BF] text-white dark:text-[#0E1114] rounded-sm font-semibold text-xs tracking-wider uppercase transition-all shadow-sm">
+                                    <i data-lucide="user-x" class="w-4 h-4"></i>
+                                    <span>Ir al Formulario de Retiro de Foto</span>
+                                </a>
+                                <p class="text-[11px] text-stone">
+                                    Las solicitudes válidas son procesadas en un plazo estimado de 24 a 48 horas hábiles, procediendo a despublicar la imagen de la galería de acceso público.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Sección 6 -->
+                    <section id="aviso-6" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">06.</span>
+                            <span>Enlaces a Sitios de Terceros</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                La plataforma puede contener enlaces hacia sitios web externos (por ejemplo, pasarelas de cobro como Mercado Pago o redes sociales como Instagram). El Titular no ejerce control editorial sobre dichos sitios y no asume responsabilidad alguna por sus contenidos, términos o políticas de tratamiento de datos, sugiriendo a los usuarios su consulta directa.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 7 -->
+                    <section id="aviso-7" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">07.</span>
+                            <span>Legislación y Tribunales Competentes</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                Las relaciones jurídicas emanadas del uso de este portal se rigen en forma exclusiva por las leyes de la <strong>República Argentina</strong>. Para dirimir cualquier diferendo no resuelto por vía de avenimiento directo, las partes se someten a la jurisdicción de los Tribunales Ordinarios con asiento en <span data-legal="cityJurisdiction">[CIUDAD DE JURISDICCIÓN: Ciudad de Oberá, Provincia de Misiones]</span>.
+                            </p>
+                        </div>
+                    </section>
+
+                </article>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- PIE DE PÁGINA                              -->
+    <!-- ========================================== -->
+    <footer class="border-t border-[#DDE4E7] dark:border-[#272F36] bg-[#E8EEF0] dark:bg-[#0E1114] py-8 text-xs text-stone">
+        <div class="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <div>
+                <span>© 2026 Nicolas Techeira Fotografías. Todos los derechos reservados.</span>
+                <span class="block text-[11px] mt-0.5">CUIT: <span data-legal="cuit">[CUIT]</span> · <span data-legal="legalAddress">[DOMICILIO LEGAL]</span></span>
+            </div>
+            <div class="flex flex-wrap items-center justify-center gap-4 text-[11px]">
+                <a href="terminos.html" class="hover:text-charcoal dark:hover:text-ivory transition-colors">Términos y Condiciones</a>
+                <span>•</span>
+                <a href="privacidad.html" class="hover:text-charcoal dark:hover:text-ivory transition-colors">Privacidad</a>
+                <span>•</span>
+                <a href="cookies.html" class="hover:text-charcoal dark:hover:text-ivory transition-colors">Cookies</a>
+                <span>•</span>
+                <a href="retiro-de-fotos.html" class="hover:text-charcoal dark:hover:text-ivory transition-colors">Retiro de Fotos</a>
+                <span>•</span>
+                <a href="arrepentimiento.html" class="text-red-600 dark:text-red-400 font-semibold hover:underline">Botón de arrepentimiento</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts de Configuración y Utilidades -->
+    <script src="legal-config.js"></script>
+    <script>
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        function toggleLocalTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            const mode = isDark ? 'dark' : 'light';
+            localStorage.setItem('nt_theme', mode);
+            localStorage.setItem('picsel_theme', mode);
+            updateThemeIcon(isDark);
+        }
+
+        function updateThemeIcon(isDark) {
+            const icon = document.getElementById('themeIcon');
+            if (icon) {
+                icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            updateThemeIcon(isDark);
+        });
+    </script>
+</body>
+</html>

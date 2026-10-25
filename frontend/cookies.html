@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Política de Cookies y Almacenamiento — Nicolas Techeira Fotografías</title>
+    <meta name="description" content="Información técnica sobre las cookies y tecnologías de almacenamiento local utilizadas en Nicolas Techeira Fotografías.">
+    <link rel="canonical" href="cookies.html">
+    <link rel="icon" type="image/png" href="logo-mark-dark.png">
+
+    <!-- Tipografías Oficiales: Space Grotesk & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        graphite: { DEFAULT: '#0E1114', surface: '#14181C', border: '#272F36' },
+                        teal: { DEFAULT: '#2DD4BF', dark: '#0F766E' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Hojas de Estilo del Proyecto -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Prevención de destello de tema (FOUC) -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('nt_theme') || localStorage.getItem('picsel_theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+</head>
+<body class="bg-[#F4F7F8] dark:bg-[#0E1114] text-[#14181C] dark:text-[#E8EEF0] font-sans antialiased min-h-screen flex flex-col selection:bg-[#2DD4BF] selection:text-[#0E1114]">
+
+    <!-- ========================================== -->
+    <!-- CABECERA INSTITUCIONAL                     -->
+    <!-- ========================================== -->
+    <header class="sticky top-0 z-40 backdrop-blur-md bg-[#F4F7F8]/90 dark:bg-[#0E1114]/90 border-b border-[#DDE4E7] dark:border-[#272F36]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-8 h-16 sm:h-20 flex items-center justify-between">
+            <a href="index.html#/" class="brand-logo-container group" title="Volver a la galería">
+                <img src="logo-mark-dark.png" alt="Nicolas Techeira" class="brand-logo-mark logo-light-theme-visible">
+                <img src="logo-mark-light.png" alt="Nicolas Techeira" class="brand-logo-mark logo-dark-theme-visible">
+                <div class="flex flex-col min-w-0">
+                    <span class="brand-logotype-text group-hover:text-[#0F766E] dark:group-hover:text-[#2DD4BF] transition-colors">
+                        Nicolas Techeira
+                    </span>
+                    <span class="brand-logotype-sub">
+                        Fotografías
+                    </span>
+                </div>
+            </a>
+
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                <button id="themeToggleBtn" onclick="toggleLocalTheme()" class="p-2 rounded-sm text-[#14181C] dark:text-[#E8EEF0] hover:bg-black/5 dark:hover:bg-white/5 transition-colors" title="Cambiar tema">
+                    <i id="themeIcon" data-lucide="moon" class="w-4 h-4 text-[#0F766E] dark:text-[#2DD4BF]"></i>
+                </button>
+                <a href="index.html#/" class="px-3.5 py-1.5 border border-[#DDE4E7] dark:border-[#272F36] hover:border-[#0F766E] dark:hover:border-[#2DD4BF] text-xs font-semibold uppercase tracking-wider transition-all flex items-center space-x-1.5 rounded-sm">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                    <span>Volver a la Tienda</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- CONTENIDO EDITORIAL DE COOKIES             -->
+    <!-- ========================================== -->
+    <main class="flex-1 py-10 sm:py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-8">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
+                
+                <!-- Barra Lateral de Navegación del Índice -->
+                <aside class="lg:col-span-4 hidden lg:block">
+                    <div class="sticky top-28 p-6 bg-white dark:bg-[#14181C] border border-[#DDE4E7] dark:border-[#272F36] rounded-sm space-y-5">
+                        <div class="border-b border-black/5 dark:border-white/5 pb-3">
+                            <span class="text-[10px] uppercase tracking-widest text-[#0F766E] dark:text-[#2DD4BF] font-semibold block mb-1">Transparencia Técnica</span>
+                            <h2 class="font-editorial text-lg font-bold">Índice de Cookies</h2>
+                        </div>
+                        
+                        <nav class="space-y-1.5 text-xs">
+                            <a href="#ck-1" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">1. ¿Qué son las Cookies y el Almacenamiento?</a>
+                            <a href="#ck-2" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">2. Almacenamiento Usado en Este Sitio</a>
+                            <a href="#ck-3" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">3. Ausencia de Cookies Publicitarias de Terceros</a>
+                            <a href="#ck-4" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">4. Pasarelas de Pago Externas</a>
+                            <a href="#ck-5" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">5. Cómo Administrar o Borrar Datos</a>
+                        </nav>
+
+                        <div class="pt-3 border-t border-black/5 dark:border-white/5 space-y-2 text-[11px] text-stone">
+                            <p><strong>Actualizado:</strong> <span data-legal="lastUpdated">Octubre 2026</span></p>
+                            <p class="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center space-x-1">
+                                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                                <span>100% Libre de Rastreadores Invasivos</span>
+                            </p>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Columna Principal -->
+                <article class="lg:col-span-8 space-y-10">
+                    
+                    <div class="border-b border-[#DDE4E7] dark:border-[#272F36] pb-8 space-y-4">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="w-2 h-2 rounded-full bg-[#2DD4BF]"></span>
+                            <span class="text-xs uppercase tracking-[0.25em] text-[#0F766E] dark:text-[#2DD4BF] font-semibold">Almacenamiento Local & Privacidad</span>
+                        </div>
+                        <h1 class="font-editorial text-3xl sm:text-5xl font-medium tracking-tight">Política de Cookies y Almacenamiento Web</h1>
+                        <p class="text-stone text-sm leading-relaxed max-w-2xl">
+                            Te explicamos con total claridad técnica qué mecanismos de almacenamiento en el navegador utiliza la tienda de <strong>Nicolas Techeira Fotografías</strong> y por qué tu navegación no está sujeta a perfilamiento comercial ni publicidad invasiva.
+                        </p>
+                    </div>
+
+                    <!-- Sección 1 -->
+                    <section id="ck-1" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">01.</span>
+                            <span>¿Qué son las Cookies y las Tecnologías de Almacenamiento Web?</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                Las cookies y las tecnologías de almacenamiento web del lado del cliente (tales como <em>localStorage</em>, <em>sessionStorage</em> e <em>IndexedDB</em>) son pequeños fragmentos de información técnica que un sitio web almacena en tu navegador para recordar preferencias de interfaz o posibilitar la navegación rápida.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 2 -->
+                    <section id="ck-2" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">02.</span>
+                            <span>Detalle Técnico del Almacenamiento Utilizado en Este Sitio</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-3">
+                            <p>
+                                En estricto apego al principio de minimización de datos, este sitio web <strong>solo utiliza almacenamiento técnico y estrictamente necesario</strong> para el funcionamiento de la plataforma:
+                            </p>
+
+                            <!-- Tabla de Tecnologías -->
+                            <div class="border border-[#DDE4E7] dark:border-[#272F36] rounded-sm overflow-hidden text-xs">
+                                <div class="bg-black/5 dark:bg-white/5 p-3 font-semibold text-charcoal dark:text-ivory grid grid-cols-12 gap-2">
+                                    <div class="col-span-3">Mecanismo / Clave</div>
+                                    <div class="col-span-3">Tipo</div>
+                                    <div class="col-span-3">Duración</div>
+                                    <div class="col-span-3">Finalidad Exclusiva</div>
+                                </div>
+                                <div class="divide-y divide-black/5 dark:divide-white/5">
+                                    <div class="p-3 grid grid-cols-12 gap-2 items-center">
+                                        <div class="col-span-3 font-mono font-medium text-[#0F766E] dark:text-[#2DD4BF]">nt_theme</div>
+                                        <div class="col-span-3">localStorage</div>
+                                        <div class="col-span-3">Persistente</div>
+                                        <div class="col-span-3">Guarda la preferencia visual del usuario entre Modo Claro y Modo Oscuro.</div>
+                                    </div>
+                                    <div class="p-3 grid grid-cols-12 gap-2 items-center">
+                                        <div class="col-span-3 font-mono font-medium text-[#0F766E] dark:text-[#2DD4BF]">nt_intro_seen</div>
+                                        <div class="col-span-3">sessionStorage</div>
+                                        <div class="col-span-3">Sesión activa</div>
+                                        <div class="col-span-3">Evita repetir la animación artística de bienvenida cada vez que navegas durante la misma visita.</div>
+                                    </div>
+                                    <div class="p-3 grid grid-cols-12 gap-2 items-center">
+                                        <div class="col-span-3 font-mono font-medium text-[#0F766E] dark:text-[#2DD4BF]">NicolasTecheira_Database</div>
+                                        <div class="col-span-3">IndexedDB</div>
+                                        <div class="col-span-3">Persistente local</div>
+                                        <div class="col-span-3">Caché local del catálogo y miniaturas de álbumes para permitir una navegación inmediata sin esperas de red.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Sección 3 -->
+                    <section id="ck-3" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">03.</span>
+                            <span>Ausencia de Cookies Publicitarias o de Rastreo de Terceros</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-3">
+                            <div class="p-5 bg-white dark:bg-[#14181C] border border-emerald-500/40 rounded-sm space-y-2">
+                                <div class="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400 font-semibold text-xs uppercase tracking-wider">
+                                    <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                    <span>Navegación Limpia y Sin Publicidad</span>
+                                </div>
+                                <p class="text-xs text-stone leading-relaxed">
+                                    Este sitio web <strong>no inserta cookies analíticas de rastreo individualizado, ni píxeles de retargeting publicitario (como Meta Pixel o Google Ads Remarketing), ni comparte hábitos de navegación con corredores de datos</strong>.
+                                </p>
+                                <p class="text-xs text-stone leading-relaxed">
+                                    Por tratarse exclusivamente de tecnologías técnicas imprescindibles para la prestación del servicio digital solicitado por el usuario, <em>no se requiere saturar tu pantalla con banners molestos de cookies de rastreo</em>. Si en el futuro se incorporasen herramientas analíticas no esenciales, se habilitará un panel de consentimiento previo conforme a la ley.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Sección 4 -->
+                    <section id="ck-4" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">04.</span>
+                            <span>Cookies en Pasarelas de Pago Externas</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                Al momento de abonar mediante la pasarela de pago seleccionada (<span data-legal="paymentGateway">[PASARELA DE PAGO: Mercado Pago]</span>), serás redirigido a la infraestructura segura del procesador de pagos. Dicha entidad utiliza sus propias cookies de seguridad estrictamente orientadas a autenticar la sesión del pagador y prevenir fraudes financieros, sujetas a sus correspondientes políticas de privacidad.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 5 -->
+                    <section id="ck-5" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">05.</span>
+                            <span>Cómo Administrar o Borrar el Almacenamiento Local</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                Podés consultar, bloquear o borrar en cualquier momento los datos almacenados en tu navegador desde el menú de configuración de tu aplicación:
+                            </p>
+                            <ul class="list-disc pl-5 space-y-1 text-xs text-stone">
+                                <li><strong>Google Chrome:</strong> Configuración → Privacidad y seguridad → Cookies y otros datos de sitios.</li>
+                                <li><strong>Apple Safari:</strong> Ajustes / Preferencias → Privacidad → Gestionar datos del sitio web.</li>
+                                <li><strong>Mozilla Firefox:</strong> Ajustes → Privacidad & Seguridad → Cookies y datos del sitio.</li>
+                                <li><strong>Microsoft Edge:</strong> Configuración → Permisos del sitio → Cookies y datos almacenados.</li>
+                            </ul>
+                            <p class="text-[11px] text-stone pt-1">
+                                <em>Nota: Si eliminás el almacenamiento local del navegador, se restablecerá tu preferencia de modo de color (claro/oscuro) y la caché local de fotos se recargará en tu próxima visita.</em>
+                            </p>
+                        </div>
+                    </section>
+
+                </article>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- PIE DE PÁGINA                              -->
+    <!-- ========================================== -->
+    <footer class="border-t border-[#DDE4E7] dark:border-[#272F36] bg-[#E8EEF0] dark:bg-[#0E1114] py-8 text-xs text-stone">
+        <div class="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <div>
+                <span>© 2026 Nicolas Techeira Fotografías. Todos los derechos reservados.</span>
+                <span class="block text-[11px] mt-0.5">CUIT: <span data-legal="cuit">[CUIT]</span> · <span data-legal="legalAddress">[DOMICILIO LEGAL]</span></span>
+            </div>
+            <div class="flex flex-wrap items-center justify-center gap-4 text-[11px]">
+                <a href="terminos.html" class="hover:text-charcoal dark:hover:text-ivory transition-colors">Términos y Condiciones</a>
+                <span>•</span>
+                <a href="privacidad.html" class="hover:text-charcoal dark:hover:text-ivory transition-colors">Privacidad</a>
+                <span>•</span>
+                <a href="aviso-legal.html" class="hover:text-charcoal dark:hover:text-ivory transition-colors">Aviso Legal</a>
+                <span>•</span>
+                <a href="retiro-de-fotos.html" class="hover:text-charcoal dark:hover:text-ivory transition-colors">Retiro de Fotos</a>
+                <span>•</span>
+                <a href="arrepentimiento.html" class="text-red-600 dark:text-red-400 font-semibold hover:underline">Botón de arrepentimiento</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts de Configuración y Utilidades -->
+    <script src="legal-config.js"></script>
+    <script>
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        function toggleLocalTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            const mode = isDark ? 'dark' : 'light';
+            localStorage.setItem('nt_theme', mode);
+            localStorage.setItem('picsel_theme', mode);
+            updateThemeIcon(isDark);
+        }
+
+        function updateThemeIcon(isDark) {
+            const icon = document.getElementById('themeIcon');
+            if (icon) {
+                icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            updateThemeIcon(isDark);
+        });
+    </script>
+</body>
+</html>

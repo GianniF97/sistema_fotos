@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Términos y Condiciones — Nicolas Techeira Fotografías</title>
+    <meta name="description" content="Términos y condiciones de contratación electrónica para la compra y licenciamiento de fotografías digitales de Nicolas Techeira.">
+    <link rel="canonical" href="terminos.html">
+    <link rel="icon" type="image/png" href="logo-mark-dark.png">
+
+    <!-- Tipografías Oficiales: Space Grotesk (Editorial) & Inter (Lectura) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        graphite: { DEFAULT: '#0E1114', surface: '#14181C', border: '#272F36' },
+                        teal: { DEFAULT: '#2DD4BF', dark: '#0F766E' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Hojas de Estilo del Proyecto -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Prevención de destello de tema (FOUC) -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('nt_theme') || localStorage.getItem('picsel_theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+</head>
+<body class="bg-[#F4F7F8] dark:bg-[#0E1114] text-[#14181C] dark:text-[#E8EEF0] font-sans antialiased min-h-screen flex flex-col selection:bg-[#2DD4BF] selection:text-[#0E1114]">
+
+    <!-- ========================================== -->
+    <!-- CABECERA INSTITUCIONAL                     -->
+    <!-- ========================================== -->
+    <header class="sticky top-0 z-40 backdrop-blur-md bg-[#F4F7F8]/90 dark:bg-[#0E1114]/90 border-b border-[#DDE4E7] dark:border-[#272F36]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-8 h-16 sm:h-20 flex items-center justify-between">
+            <a href="index.html#/" class="brand-logo-container group" title="Volver a la galería">
+                <img src="logo-mark-dark.png" alt="Nicolas Techeira" class="brand-logo-mark logo-light-theme-visible">
+                <img src="logo-mark-light.png" alt="Nicolas Techeira" class="brand-logo-mark logo-dark-theme-visible">
+                <div class="flex flex-col min-w-0">
+                    <span class="brand-logotype-text group-hover:text-[#0F766E] dark:group-hover:text-[#2DD4BF] transition-colors">
+                        Nicolas Techeira
+                    </span>
+                    <span class="brand-logotype-sub">
+                        Fotografías
+                    </span>
+                </div>
+            </a>
+
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                <button id="themeToggleBtn" onclick="toggleLocalTheme()" class="p-2 rounded-sm text-[#14181C] dark:text-[#E8EEF0] hover:bg-black/5 dark:hover:bg-white/5 transition-colors" title="Cambiar tema">
+                    <i id="themeIcon" data-lucide="moon" class="w-4 h-4 text-[#0F766E] dark:text-[#2DD4BF]"></i>
+                </button>
+                <a href="index.html#/" class="px-3.5 py-1.5 border border-[#DDE4E7] dark:border-[#272F36] hover:border-[#0F766E] dark:hover:border-[#2DD4BF] text-xs font-semibold uppercase tracking-wider transition-all flex items-center space-x-1.5 rounded-sm">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                    <span>Volver a la Tienda</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- CONTENIDO EDITORIAL DE TÉRMINOS            -->
+    <!-- ========================================== -->
+    <main class="flex-1 py-10 sm:py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-8">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
+                
+                <!-- Barra Lateral de Navegación del Índice (Sticky en Desktop) -->
+                <aside class="lg:col-span-4 hidden lg:block">
+                    <div class="sticky top-28 p-6 bg-white dark:bg-[#14181C] border border-[#DDE4E7] dark:border-[#272F36] rounded-sm space-y-5">
+                        <div class="border-b border-black/5 dark:border-white/5 pb-3">
+                            <span class="text-[10px] uppercase tracking-widest text-[#0F766E] dark:text-[#2DD4BF] font-semibold block mb-1">Documento Contractual</span>
+                            <h2 class="font-editorial text-lg font-bold">Índice de Secciones</h2>
+                        </div>
+                        
+                        <nav class="space-y-1.5 text-xs">
+                            <a href="#sec-1" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">1. Identificación del Vendedor</a>
+                            <a href="#sec-2" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">2. Objeto y Descripción del Servicio</a>
+                            <a href="#sec-3" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">3. Registro, Cuenta y Acceso</a>
+                            <a href="#sec-4" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">4. Precios, Moneda y Facturación</a>
+                            <a href="#sec-5" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">5. Proceso de Compra y Perfeccionamiento</a>
+                            <a href="#sec-6" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">6. Medios de Pago</a>
+                            <a href="#sec-7" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">7. Entrega Digital y Enlaces Temporales</a>
+                            <a href="#sec-8" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">8. Licencia de Uso (Uso Personal)</a>
+                            <a href="#sec-9" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">9. Propiedad Intelectual y Derechos de Autor</a>
+                            <a href="#sec-10" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">10. Marcas de Agua y Protección Tecnológica</a>
+                            <a href="#sec-11" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">11. Conductas Prohibidas</a>
+                            <a href="#sec-12" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">12. Disponibilidad y Responsabilidad</a>
+                            <a href="#sec-13" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">13. Modificaciones de los Términos</a>
+                            <a href="#sec-14" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">14. Ley Aplicable y Jurisdicción</a>
+                            <a href="#sec-15" class="block py-1 text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">15. Defensa del Consumidor</a>
+                        </nav>
+
+                        <div class="pt-3 border-t border-black/5 dark:border-white/5 space-y-2 text-[11px] text-stone">
+                            <p><strong>Versión:</strong> <span data-legal="version">1.0</span></p>
+                            <p><strong>Última actualización:</strong> <span data-legal="lastUpdated">Octubre 2026</span></p>
+                            <a href="arrepentimiento.html" class="inline-flex items-center space-x-1.5 text-red-600 dark:text-red-400 font-semibold hover:underline pt-1">
+                                <i data-lucide="undo-2" class="w-3.5 h-3.5"></i>
+                                <span>Botón de arrepentimiento</span>
+                            </a>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Columna Principal: Texto Contractual -->
+                <article class="lg:col-span-8 space-y-10">
+                    
+                    <!-- Encabezado de Documento -->
+                    <div class="border-b border-[#DDE4E7] dark:border-[#272F36] pb-8 space-y-4">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="w-2 h-2 rounded-full bg-[#2DD4BF]"></span>
+                            <span class="text-xs uppercase tracking-[0.25em] text-[#0F766E] dark:text-[#2DD4BF] font-semibold">Marco Contractual E-Commerce</span>
+                        </div>
+                        <h1 class="font-editorial text-3xl sm:text-5xl font-medium tracking-tight">Términos y Condiciones de Uso y Contratación</h1>
+                        <p class="text-stone text-sm leading-relaxed max-w-2xl">
+                            Te damos la bienvenida a la plataforma digital de <strong>Nicolas Techeira Fotografías</strong>. El acceso, navegación y adquisición de fotografías a través de este sitio web se rige por las siguientes cláusulas y la legislación vigente de la República Argentina. Al utilizar el sitio o realizar una compra, aceptás estos términos plenamente y sin reservas.
+                        </p>
+                        <div class="inline-flex items-center space-x-4 text-xs text-stone pt-2">
+                            <span>Versión <span data-legal="version">1.0</span></span>
+                            <span>•</span>
+                            <span>Vigente desde: <span data-legal="lastUpdated">25 de octubre de 2026</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Sección 1 -->
+                    <section id="sec-1" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">01.</span>
+                            <span>Identificación del Vendedor y Titular</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                El presente sitio web es de titularidad y gestión exclusiva de <strong class="text-charcoal dark:text-ivory" data-legal="legalName">[RAZÓN SOCIAL / NOMBRE COMERCIAL]</strong> (en adelante, indistintamente, "el Titular", "el Fotógrafo" o "Nicolas Techeira Fotografías"), con CUIT N.º <strong class="text-charcoal dark:text-ivory" data-legal="cuit">[CUIT]</strong>, y domicilio legal constituido en <span data-legal="legalAddress">[DOMICILIO LEGAL]</span>.
+                            </p>
+                            <p>
+                                Canal de atención y consultas de contratación: <a href="#" data-legal="contactEmail" class="text-[#0F766E] dark:text-[#2DD4BF] underline font-medium">[CORREO DE CONTACTO Y ATENCIÓN AL CONSUMIDOR]</a>.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 2 -->
+                    <section id="sec-2" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">02.</span>
+                            <span>Objeto y Descripción del Servicio</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                La plataforma ofrece un catálogo organizado por eventos, fechas y colecciones artísticas mediante el cual los usuarios pueden previsualizar imágenes protegidas y adquirir licencias de uso sobre <strong>archivos digitales fotográficos en alta resolución original sin marcas de agua</strong>.
+                            </p>
+                            <p>
+                                Salvo que se acuerde expresamente por escrito, la compra comprende única y exclusivamente la entrega de archivos intangibles digitales descargables mediante enlace web, no incluyendo impresiones físicas, enmarcados ni soportes materiales.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 3 -->
+                    <section id="sec-3" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">03.</span>
+                            <span>Registro, Cuenta y Acceso</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                La exploración del portafolio y la selección de fotos en el carrito de compras es abierta y no exige la creación obligatoria de una cuenta con contraseña previa por parte del cliente comprador. Para procesar el pedido y hacer llegar los enlaces de descarga, se requerirán datos básicos de contacto e identificación (nombre y dirección de correo electrónico válida).
+                            </p>
+                            <p>
+                                El acceso a la sección de administración del estudio (/admin) se encuentra estrictamente reservado al fotógrafo titular mediante credenciales autenticadas.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 4 -->
+                    <section id="sec-4" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">04.</span>
+                            <span>Precios, Moneda y Facturación</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                Todos los precios exhibidos en la plataforma se encuentran expresados en <strong>Pesos Argentinos (ARS)</strong> e incluyen los tributos aplicables al consumidor final según la normativa impositiva argentina.
+                            </p>
+                            <p>
+                                Los precios pueden ser actualizados periódicamente sin previo aviso; no obstante, las órdenes confirmadas y abonadas respetarán indefectiblemente el valor vigente al momento exacto en que se inició el proceso de pago. Si la compra califica para descuentos por volumen (packs de 5 fotos, 10 fotos o colección completa), estos se verán reflejados de forma discriminada antes de confirmar la transacción.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 5 -->
+                    <section id="sec-5" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">05.</span>
+                            <span>Proceso de Compra y Perfeccionamiento del Contrato</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                El contrato de compraventa y licenciamiento digital queda formalizado cuando el usuario selecciona las fotografías deseadas, acepta estos Términos y la Política de Privacidad mediante la casilla de verificación correspondiente, y la pasarela de pago emisora confirma la acreditación efectiva de los fondos.
+                            </p>
+                            <p>
+                                Tras la acreditación, el sistema genera automáticamente un número de orden único (ej. NT-XXXXXX) y pone a disposición los accesos directos y seguros para la descarga del material contratado.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 6 -->
+                    <section id="sec-6" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">06.</span>
+                            <span>Medios de Pago</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                El cobro electrónico de las órdenes se canaliza a través de <strong class="text-charcoal dark:text-ivory" data-legal="paymentGateway">[PASARELA DE PAGO: Mercado Pago / Stripe]</strong>.
+                            </p>
+                            <p>
+                                El Titular <strong>no procesa, no intercepta ni almacena números completos de tarjetas de crédito o débito, códigos de seguridad (CVV) ni claves bancarias</strong>. La seguridad y procesamiento de los datos financieros se realiza íntegramente bajo la infraestructura cifrada y los estándares internacionales PCI-DSS provistos por la pasarela de pago seleccionada.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 7 -->
+                    <section id="sec-7" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">07.</span>
+                            <span>Entrega Digital y Enlaces Temporales</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                La entrega del contenido digital se realiza de manera inmediata tras la acreditación del pago, mediante enlaces web protegidos.
+                            </p>
+                            <!-- REVISAR CON ABOGADO: Plazo de caducidad del enlace temporal y límite de descargas -->
+                            <p class="p-3 bg-black/5 dark:bg-white/5 border-l-2 border-[#2DD4BF] text-xs">
+                                <strong>Seguridad y caducidad de los enlaces:</strong> Por razones de seguridad técnica y protección contra accesos indebidos, los enlaces de descarga provistos son temporales y cuentan con un plazo de vigencia predeterminado (por ejemplo, 30 días corridos a partir de la emisión de la orden) o un límite razonable de reintentos de descarga. Es responsabilidad exclusiva del comprador descargar y guardar una copia de resguardo de sus archivos dentro de dicho período en su propio dispositivo o almacenamiento seguro.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 8 -->
+                    <section id="sec-8" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">08.</span>
+                            <span>Licencia de Uso Concedida al Comprador</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                La adquisición de una fotografía digital concede al comprador una <strong>licencia de uso personal, no exclusiva, intransferible y de alcance mundial</strong>, sujeta a las siguientes estipulaciones:
+                            </p>
+                            <ul class="list-disc pl-5 space-y-1.5 text-xs text-stone">
+                                <li><strong>Usos permitidos:</strong> Publicación en redes sociales y perfiles personales (etiquetando preferentemente al fotógrafo @nicolastecheira), impresión en papel o lienzo para decoración privada del hogar o regalos familiares, y archivo personal digital.</li>
+                                <li><strong>Usos prohibidos:</strong> Queda terminantemente prohibida la reventa, cesión, sublicenciamiento, distribución pública con fines de lucro, comercialización en bancos de imágenes de stock, incorporación en marcas comerciales o logotipos, o su utilización en campañas de publicidad comercial o corporativa de terceros, salvo autorización expresa y por escrito suscripta por el autor.</li>
+                                <li><strong>Integridad de la obra:</strong> Queda prohibido alterar, deformar o someter la fotografía a ediciones que desmerezcan la reputación artística del autor o vulneren sus derechos morales de autor.</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <!-- Sección 9 -->
+                    <section id="sec-9" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">09.</span>
+                            <span>Propiedad Intelectual y Derechos de Autor</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                Todas las fotografías exhibidas y comercializadas en este sitio son obras artísticas protegidas por la <strong>Ley N.º 11.723 de Propiedad Intelectual</strong> de la República Argentina y convenios internacionales (Convenio de Berna).
+                            </p>
+                            <p>
+                                La compra de un archivo fotográfico otorga únicamente la licencia de uso personal descripta en la cláusula 8 y <strong>en ningún caso implica la transferencia ni cesión de los derechos de autor patrimoniales ni morales</strong>, los cuales permanecen de manera inalienable bajo la exclusiva titularidad de Nicolas Techeira.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 10 -->
+                    <section id="sec-10" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">10.</span>
+                            <span>Marcas de Agua y Protección Tecnológica</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                Las imágenes de vista previa exhibidas en los álbumes públicos incluyen una marca de agua visible de seguridad ("Nicolas Techeira · Vista Previa"). El retiro de dicha marca de agua se efectúa únicamente tras la confirmación del pago en los archivos originales entregados al comprador.
+                            </p>
+                            <p>
+                                Queda expresamente prohibido capturar, recortar, manipular digitalmente, remover marcas de agua mediante inteligencia artificial o eludir de cualquier otra forma las medidas tecnológicas de protección implementadas en el sitio web.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 11 -->
+                    <section id="sec-11" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">11.</span>
+                            <span>Conductas Prohibidas</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>El usuario se compromete a no realizar ninguna de las siguientes acciones:</p>
+                            <ul class="list-disc pl-5 space-y-1 text-xs text-stone">
+                                <li>Emplear herramientas automáticas (scrapers, spiders, bots de extracción) para copiar o indexar el catálogo fotográfico.</li>
+                                <li>Vulnerar o intentar vulnerar los sistemas de seguridad de la plataforma o del panel administrativo.</li>
+                                <li>Utilizar las fotografías para fines ilícitos, discriminatorios, difamatorios o lesivos de la dignidad humana de las personas retratadas.</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <!-- Sección 12 -->
+                    <section id="sec-12" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">12.</span>
+                            <span>Disponibilidad del Servicio y Limitación de Responsabilidad</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <!-- REVISAR CON ABOGADO: Límites de responsabilidad técnica y fuerza mayor -->
+                            <p>
+                                El Titular procura mantener la máxima disponibilidad y calidad de servicio en la plataforma. No obstante, no se responsabiliza por interrupciones temporales causadas por tareas de mantenimiento técnico programado, caídas en proveedores de conectividad de internet, hosting o servicios de terceros ajenos a su control razonable.
+                            </p>
+                            <p>
+                                Asimismo, una vez vencido el período de descarga o entregados exitosamente los archivos en la resolución contratada, el Titular no garantiza el almacenamiento perpetuo de copias de seguridad de las fotos adquiridas por el cliente.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 13 -->
+                    <section id="sec-13" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">13.</span>
+                            <span>Modificaciones de los Términos</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                El Titular se reserva el derecho de modificar estos Términos y Condiciones en cualquier momento con el fin de adecuarlos a reformas legales, mejoras operativas o cambios comerciales. La versión vigente será siempre la publicada en esta URL, indicando su fecha de actualización y número de versión al pie.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 14 -->
+                    <section id="sec-14" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">14.</span>
+                            <span>Ley Aplicable y Jurisdicción</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                Estos Términos y Condiciones se interpretan y rigen íntegramente conforme a las leyes de la <strong>República Argentina</strong>.
+                            </p>
+                            <p>
+                                Ante cualquier controversia derivada del uso del sitio o de las transacciones aquí efectuadas, las partes se someten a la competencia de los Tribunales Ordinarios de <span data-legal="cityJurisdiction">[CIUDAD DE JURISDICCIÓN: Ciudad de Oberá, Provincia de Misiones]</span>, con expresa renuncia a cualquier otro fuero o jurisdicción que pudiera corresponder, sin perjuicio de las normas imperativas de protección al consumidor (Ley 24.240) que habiliten la jurisdicción del domicilio del consumidor.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Sección 15 -->
+                    <section id="sec-15" class="space-y-3 pt-2">
+                        <h2 class="font-editorial text-xl sm:text-2xl font-semibold text-[#14181C] dark:text-[#E8EEF0] flex items-center space-x-2">
+                            <span class="text-xs font-mono text-[#0F766E] dark:text-[#2DD4BF]">15.</span>
+                            <span>Defensa del Consumidor</span>
+                        </h2>
+                        <div class="text-sm text-stone leading-relaxed space-y-2">
+                            <p>
+                                Conforme a lo establecido por la <strong>Ley N.º 24.240 de Defensa del Consumidor</strong>, las personas adquirentes gozan de todos los derechos de información, trato digno y protección legal.
+                            </p>
+                            <p>
+                                Para conocer tus derechos o iniciar un reclamo ante la autoridad nacional competente, podés comunicarte gratuitamente a la línea de información al consumidor <strong>0800-666-1518</strong> o ingresar al portal oficial de la Ventanilla Única Federal de Defensa del Consumidor:
+                            </p>
+                            <p class="pt-1">
+                                <a href="https://www.argentina.gob.ar/produccion/defensadelconsumidor/formulario" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1.5 px-4 py-2 bg-black/5 dark:bg-white/5 border border-[#DDE4E7] dark:border-[#272F36] rounded-sm text-xs text-[#0F766E] dark:text-[#2DD4BF] font-semibold hover:border-[#2DD4BF] transition-colors">
+                                    <span>Formulario Oficial de Reclamos en Defensa del Consumidor</span>
+                                    <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+                                </a>
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Enlace directo al Botón de Arrepentimiento -->
+                    <div class="p-5 bg-red-500/10 border border-red-500/30 rounded-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <span class="text-xs uppercase font-bold text-red-600 dark:text-red-400 tracking-wider block">Derecho de Arrepentimiento</span>
+                            <span class="text-xs text-stone">¿Querés revocar tu compra dentro de los 10 días corridos de realizada?</span>
+                        </div>
+                        <a href="arrepentimiento.html" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-sm text-xs font-semibold uppercase tracking-wider transition-colors flex items-center space-x-1.5 flex-shrink-0">
+                            <i data-lucide="undo-2" class="w-3.5 h-3.5"></i>
+                            <span>Botón de arrepentimiento</span>
+                        </a>
+                    </div>
+
+                </article>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- PIE DE PÁGINA                              -->
+    <!-- ========================================== -->
+    <footer class="border-t border-[#DDE4E7] dark:border-[#272F36] bg-[#E8EEF0] dark:bg-[#0E1114] py-8 text-xs text-stone">
+        <div class="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <div>
+                <span>© 2026 Nicolas Techeira Fotografías. Todos los derechos reservados.</span>
+                <span class="block text-[11px] mt-0.5">CUIT: <span data-legal="cuit">[CUIT]</span> · <span data-legal="legalAddress">[DOMICILIO LEGAL]</span></span>
+            </div>
+            <div class="flex flex-wrap items-center justify-center gap-4 text-[11px]">
+                <a href="privacidad.html" class="hover:text-charcoal dark:hover:text-ivory transition-colors">Privacidad</a>
+                <span>•</span>
+                <a href="aviso-legal.html" class="hover:text-charcoal dark:hover:text-ivory transition-colors">Aviso Legal</a>
+                <span>•</span>
+                <a href="cookies.html" class="hover:text-charcoal dark:hover:text-ivory transition-colors">Cookies</a>
+                <span>•</span>
+                <a href="retiro-de-fotos.html" class="hover:text-charcoal dark:hover:text-ivory transition-colors">Retiro de Fotos</a>
+                <span>•</span>
+                <a href="arrepentimiento.html" class="text-red-600 dark:text-red-400 font-semibold hover:underline">Botón de arrepentimiento</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts de Configuración y Utilidades -->
+    <script src="legal-config.js"></script>
+    <script>
+        // Inicializar iconos Lucide
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        // Control de tema claro/oscuro sincronizado
+        function toggleLocalTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            const mode = isDark ? 'dark' : 'light';
+            localStorage.setItem('nt_theme', mode);
+            localStorage.setItem('picsel_theme', mode);
+            updateThemeIcon(isDark);
+        }
+
+        function updateThemeIcon(isDark) {
+            const icon = document.getElementById('themeIcon');
+            if (icon) {
+                icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            updateThemeIcon(isDark);
+        });
+    </script>
+</body>
+</html>

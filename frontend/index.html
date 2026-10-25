@@ -179,7 +179,7 @@
                 </a>
 
                 <!-- Botón Menú Hamburguesa Móvil -->
-                <button id="mobileMenuBtn" onclick="app.toggleMobileMenu()" class="md:hidden p-2 text-[#14181C] dark:text-[#E8EEF0] hover:bg-black/5 dark:hover:bg-white/5 rounded-sm transition-colors" aria-label="Abrir menú de navegación" aria-expanded="false">
+                <button id="mobileMenuBtn" onclick="app.toggleMobileMenu(event)" class="md:hidden p-2 text-[#14181C] dark:text-[#E8EEF0] hover:bg-black/5 dark:hover:bg-white/5 rounded-sm transition-colors" aria-label="Abrir menú de navegación" aria-expanded="false">
                     <i id="mobileMenuIcon" data-lucide="menu" class="w-5 h-5"></i>
                 </button>
 
@@ -188,7 +188,7 @@
         </div>
 
         <!-- Menú Desplegable Móvil (Drawer) -->
-        <div id="mobileMenuDrawer" class="hidden md:hidden fixed inset-x-0 top-16 z-50 bg-[#F4F7F8]/98 dark:bg-[#0E1114]/98 backdrop-blur-xl border-b border-[#DDE4E7] dark:border-[#272F36] shadow-2xl transition-all duration-200">
+        <div id="mobileMenuDrawer" class="hidden md:hidden absolute top-full inset-x-0 z-50">
             <div class="px-5 py-4 space-y-1">
                 <a href="#albumsSection" onclick="app.navigateToSection('albumsSection', event); app.closeMobileMenu();" class="flex items-center justify-between py-3 text-xs uppercase tracking-widest font-semibold text-[#14181C] dark:text-[#E8EEF0] hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors border-b border-black/5 dark:border-white/5">
                     <span>Colecciones</span>
@@ -1108,61 +1108,148 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- 12. PIE DE PÁGINA EDITORIAL                -->
+    <!-- 12. PIE DE PÁGINA EDITORIAL & LEGAL        -->
     <!-- ========================================== -->
-    <footer class="border-t border-charcoal/10 dark:border-ivory/10 bg-ivory dark:bg-charcoal pt-16 pb-12 transition-colors">
+    <footer class="border-t border-charcoal/10 dark:border-ivory/10 bg-[#E8EEF0] dark:bg-[#0E1114] pt-14 pb-12 transition-colors">
         <div class="max-w-7xl mx-auto px-4 sm:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-charcoal/10 dark:border-ivory/10">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 pb-12 border-b border-charcoal/10 dark:border-ivory/10">
                 
-                <!-- Columna Marca con Logotipo Oficial -->
-                <div class="md:col-span-6 space-y-4">
+                <!-- Columna 1: Identidad de Marca y Datos Fiscales del Titular -->
+                <div class="lg:col-span-4 space-y-3.5">
                     <div class="flex items-center space-x-3">
-                        <img src="logo-mark-dark.png" alt="Nicolas Techeira" class="h-10 w-auto logo-light-theme-visible">
-                        <img src="logo-mark-light.png" alt="Nicolas Techeira" class="h-10 w-auto logo-dark-theme-visible">
+                        <img src="logo-mark-dark.png" alt="Nicolas Techeira" class="h-9 w-auto logo-light-theme-visible">
+                        <img src="logo-mark-light.png" alt="Nicolas Techeira" class="h-9 w-auto logo-dark-theme-visible">
                         <div>
-                            <span class="font-editorial text-2xl text-charcoal dark:text-ivory block leading-tight">
+                            <span class="font-editorial text-xl text-charcoal dark:text-ivory block leading-tight font-medium">
                                 Nicolas Techeira Fotografías
                             </span>
-                            <span class="text-[10px] tracking-widest text-bronze uppercase">
+                            <span class="text-[9px] tracking-widest text-[#0F766E] dark:text-[#2DD4BF] uppercase font-semibold">
                                 Archivo & Cobertura Oficial
                             </span>
                         </div>
                     </div>
-                    <p class="font-editorial italic text-stone text-lg max-w-md">
+                    
+                    <p class="font-editorial italic text-stone text-sm max-w-sm">
                         “Historias que merecen ser recordadas.”
                     </p>
-                    <p class="text-xs text-stone pt-1">
-                        Fotografía editorial contemporánea, eventos sociales y ballet artístico en Oberá, Misiones.
+
+                    <!-- Datos del Titular y Facturación (Ley 24.240 y Normativa Comercial) -->
+                    <div class="pt-2 space-y-1.5 text-xs text-stone border-t border-charcoal/10 dark:border-ivory/10">
+                        <p><strong class="text-charcoal dark:text-ivory font-semibold">Titular:</strong> <span data-legal="legalName">[RAZÓN SOCIAL / NOMBRE COMERCIAL]</span></p>
+                        <p><strong class="text-charcoal dark:text-ivory font-semibold">CUIT:</strong> <span data-legal="cuit">[CUIT]</span></p>
+                        <p><strong class="text-charcoal dark:text-ivory font-semibold">Domicilio legal:</strong> <span data-legal="legalAddress">[DOMICILIO LEGAL]</span></p>
+                        <p><strong class="text-charcoal dark:text-ivory font-semibold">Atención al consumidor:</strong> <a href="#" data-legal="contactEmail" class="hover:text-[#0F766E] dark:hover:text-[#2DD4BF] underline decoration-dotted transition-colors">[CORREO DE CONTACTO Y ATENCIÓN AL CONSUMIDOR]</a></p>
+                    </div>
+                </div>
+
+                <!-- Columna 2: Marco Legal & Transparencia -->
+                <div class="lg:col-span-3 space-y-2.5 text-xs">
+                    <span class="text-[#0F766E] dark:text-[#2DD4BF] uppercase tracking-widest font-semibold block mb-3 text-[11px]">
+                        Términos & Políticas
+                    </span>
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="terminos.html" class="text-stone hover:text-charcoal dark:hover:text-ivory transition-colors flex items-center space-x-1.5">
+                                <i data-lucide="file-text" class="w-3.5 h-3.5 text-[#0F766E] dark:text-[#2DD4BF]"></i>
+                                <span>Términos y Condiciones</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="privacidad.html" class="text-stone hover:text-charcoal dark:hover:text-ivory transition-colors flex items-center space-x-1.5">
+                                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-[#0F766E] dark:text-[#2DD4BF]"></i>
+                                <span>Política de Privacidad</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="aviso-legal.html" class="text-stone hover:text-charcoal dark:hover:text-ivory transition-colors flex items-center space-x-1.5">
+                                <i data-lucide="scale" class="w-3.5 h-3.5 text-[#0F766E] dark:text-[#2DD4BF]"></i>
+                                <span>Aviso Legal & Derechos</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="cookies.html" class="text-stone hover:text-charcoal dark:hover:text-ivory transition-colors flex items-center space-x-1.5">
+                                <i data-lucide="cookie" class="w-3.5 h-3.5 text-[#0F766E] dark:text-[#2DD4BF]"></i>
+                                <span>Política de Cookies</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="retiro-de-fotos.html" class="text-stone hover:text-charcoal dark:hover:text-ivory transition-colors flex items-center space-x-1.5">
+                                <i data-lucide="user-x" class="w-3.5 h-3.5 text-[#0F766E] dark:text-[#2DD4BF]"></i>
+                                <span>Solicitud de Retiro de Fotos</span>
+                            </a>
+                        </li>
+                        <li class="pt-1.5">
+                            <a href="https://www.argentina.gob.ar/produccion/defensadelconsumidor/formulario" target="_blank" rel="noopener noreferrer" class="text-[11px] text-stone hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors flex items-center space-x-1">
+                                <span>Defensa del Consumidor</span>
+                                <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Columna 3: Botón de Arrepentimiento (Res. 424/2020) -->
+                <div class="lg:col-span-3 space-y-3 text-xs">
+                    <span class="text-[#0F766E] dark:text-[#2DD4BF] uppercase tracking-widest font-semibold block text-[11px]">
+                        Derecho de Revocación
+                    </span>
+                    <p class="text-stone text-[11px] leading-relaxed">
+                        Conforme a la Res. 424/2020 de la Secretaría de Comercio Interior, podés solicitar la revocación de tu compra dentro de los 10 días corridos.
+                    </p>
+                    
+                    <!-- Botón de Arrepentimiento Destacado y Visible -->
+                    <div class="pt-1">
+                        <a href="arrepentimiento.html" class="inline-flex items-center justify-center space-x-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/40 rounded-sm font-semibold text-xs tracking-wider uppercase transition-all shadow-sm group" title="Acceso al trámite de revocación de compra — Botón de arrepentimiento">
+                            <i data-lucide="undo-2" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform"></i>
+                            <span>Botón de arrepentimiento</span>
+                        </a>
+                    </div>
+                    <p class="text-[10px] text-stone">
+                        Trámite directo sin registro previo con código identificador de solicitud.
                     </p>
                 </div>
 
-                <!-- Columna Estudio & Ubicación -->
-                <div class="md:col-span-3 space-y-2 text-xs">
-                    <span class="text-bronze uppercase tracking-widest font-semibold block mb-2">Estudio</span>
-                    <p class="text-charcoal dark:text-ivory font-medium">Oberá, Misiones, Argentina</p>
-                    <a href="https://instagram.com/nicolastecheira" target="_blank" rel="noopener noreferrer" class="block text-stone hover:text-bronze transition-colors">
-                        Instagram: @nicolastecheira
-                    </a>
-                    <span class="block text-stone pt-1">Atención personalizada y reservas</span>
-                </div>
-
-                <!-- Columna Acceso Profesional -->
-                <div class="md:col-span-3 space-y-2 text-xs">
-                    <span class="text-bronze uppercase tracking-widest font-semibold block mb-2">Profesional</span>
-                    <a href="#/admin/login" class="inline-block text-charcoal dark:text-ivory hover:text-bronze transition-colors underline underline-offset-4 decoration-bronze font-medium">
-                        Acceso Estudio / CMS
-                    </a>
-                    <p class="text-stone text-[11px] pt-1">
-                        Gestión segura de colecciones, fotografías y publicación directa.
-                    </p>
+                <!-- Columna 4: Navegación & Acceso Estudio -->
+                <div class="lg:col-span-2 space-y-2.5 text-xs">
+                    <span class="text-[#0F766E] dark:text-[#2DD4BF] uppercase tracking-widest font-semibold block mb-3 text-[11px]">
+                        Navegación
+                    </span>
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="#albumsSection" onclick="app.navigateToSection('albumsSection', event)" class="text-stone hover:text-charcoal dark:hover:text-ivory transition-colors">
+                                Colecciones
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#comoFuncionaSection" onclick="app.navigateToSection('comoFuncionaSection', event)" class="text-stone hover:text-charcoal dark:hover:text-ivory transition-colors">
+                                ¿Cómo Funciona?
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://instagram.com/nicolastecheira" target="_blank" rel="noopener noreferrer" class="text-stone hover:text-charcoal dark:hover:text-ivory transition-colors flex items-center space-x-1">
+                                <span>Instagram</span>
+                                <i data-lucide="arrow-up-right" class="w-3 h-3 text-[#0F766E] dark:text-[#2DD4BF]"></i>
+                            </a>
+                        </li>
+                        <li class="pt-2">
+                            <a href="#/admin/login" class="inline-block text-charcoal dark:text-ivory hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors underline underline-offset-4 decoration-[#2DD4BF] font-medium text-[11px]">
+                                Acceso Estudio CMS
+                            </a>
+                        </li>
+                    </ul>
                 </div>
 
             </div>
 
-            <!-- Copyright y Firma de Identidad -->
-            <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-stone gap-4">
-                <span>© 2026 Nicolas Techeira Fotografías. Todos los derechos reservados.</span>
-                <span class="text-stone">Identidad Visual & Plataforma Fotográfica</span>
+            <!-- Copyright, Jurisdicción y Órgano de Control -->
+            <div class="pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-stone gap-4 text-center md:text-left">
+                <div>
+                    <span>© 2026 Nicolas Techeira Fotografías. Todos los derechos reservados.</span>
+                    <span class="block text-[11px] mt-0.5">Jurisdicción: <span data-legal="cityJurisdiction">[CIUDAD DE JURISDICCIÓN]</span></span>
+                </div>
+                <div class="text-[11px] text-stone">
+                    <span>Órgano de Control: Agencia de Acceso a la Información Pública (Ley 25.326).</span>
+                </div>
             </div>
         </div>
     </footer>
@@ -1170,6 +1257,7 @@
     <!-- ========================================== -->
     <!-- 13. SCRIPTS                                -->
     <!-- ========================================== -->
+    <script src="legal-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="db.js"></script>
     <script src="script.js?v=gt-2.0"></script>

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Botón de Arrepentimiento — Nicolas Techeira Fotografías</title>
+    <meta name="description" content="Formulario oficial de revocación de compra electrónica conforme a la Resolución 424/2020 de la Secretaría de Comercio Interior y el Art. 34 de la Ley 24.240.">
+    <link rel="canonical" href="arrepentimiento.html">
+    <link rel="icon" type="image/png" href="logo-mark-dark.png">
+
+    <!-- Tipografías Oficiales: Space Grotesk & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        graphite: { DEFAULT: '#0E1114', surface: '#14181C', border: '#272F36' },
+                        teal: { DEFAULT: '#2DD4BF', dark: '#0F766E' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Hojas de Estilo del Proyecto -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Prevención de destello de tema (FOUC) -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('nt_theme') || localStorage.getItem('picsel_theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+</head>
+<body class="bg-[#F4F7F8] dark:bg-[#0E1114] text-[#14181C] dark:text-[#E8EEF0] font-sans antialiased min-h-screen flex flex-col selection:bg-[#2DD4BF] selection:text-[#0E1114]">
+
+    <!-- ========================================== -->
+    <!-- CABECERA INSTITUCIONAL                     -->
+    <!-- ========================================== -->
+    <header class="sticky top-0 z-40 backdrop-blur-md bg-[#F4F7F8]/90 dark:bg-[#0E1114]/90 border-b border-[#DDE4E7] dark:border-[#272F36]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-8 h-16 sm:h-20 flex items-center justify-between">
+            <a href="index.html#/" class="brand-logo-container group" title="Volver a la galería">
+                <img src="logo-mark-dark.png" alt="Nicolas Techeira" class="brand-logo-mark logo-light-theme-visible">
+                <img src="logo-mark-light.png" alt="Nicolas Techeira" class="brand-logo-mark logo-dark-theme-visible">
+                <div class="flex flex-col min-w-0">
+                    <span class="brand-logotype-text group-hover:text-[#0F766E] dark:group-hover:text-[#2DD4BF] transition-colors">
+                        Nicolas Techeira
+                    </span>
+                    <span class="brand-logotype-sub">
+                        Fotografías
+                    </span>
+                </div>
+            </a>
+
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                <button id="themeToggleBtn" onclick="toggleLocalTheme()" class="p-2 rounded-sm text-[#14181C] dark:text-[#E8EEF0] hover:bg-black/5 dark:hover:bg-white/5 transition-colors" title="Cambiar tema">
+                    <i id="themeIcon" data-lucide="moon" class="w-4 h-4 text-[#0F766E] dark:text-[#2DD4BF]"></i>
+                </button>
+                <a href="index.html#/" class="px-3.5 py-1.5 border border-[#DDE4E7] dark:border-[#272F36] hover:border-[#0F766E] dark:hover:border-[#2DD4BF] text-xs font-semibold uppercase tracking-wider transition-all flex items-center space-x-1.5 rounded-sm">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                    <span>Volver a la Tienda</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- CONTENIDO: FORMULARIO DE ARREPENTIMIENTO   -->
+    <!-- ========================================== -->
+    <main class="flex-1 py-10 sm:py-16">
+        <div class="max-w-4xl mx-auto px-4 sm:px-8">
+            
+            <!-- Encabezado Editorial Legal -->
+            <div class="mb-10 text-center sm:text-left space-y-3 border-b border-[#DDE4E7] dark:border-[#272F36] pb-8">
+                <div class="flex items-center justify-center sm:justify-start space-x-2.5">
+                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                    <span class="text-xs uppercase tracking-[0.25em] text-red-600 dark:text-red-400 font-semibold">Resolución 424/2020 SCI · Ley 24.240</span>
+                </div>
+                <h1 class="font-editorial text-3xl sm:text-5xl font-medium tracking-tight">Botón de Arrepentimiento</h1>
+                <p class="text-stone text-sm leading-relaxed max-w-2xl">
+                    De conformidad con el <strong>artículo 34 de la Ley 24.240 de Defensa del Consumidor</strong> y la <strong>Resolución 424/2020 de la Secretaría de Comercio Interior</strong> de la Nación Argentina, tenés derecho a revocar la aceptación de tu compra dentro del plazo de <strong>10 (diez) días corridos</strong> contados a partir de la fecha de adquisición.
+                </p>
+                <p class="text-xs text-stone leading-relaxed max-w-2xl">
+                    Este trámite es <strong>totalmente gratuito</strong>, no exige registración previa de usuario y generará un código identificador único de seguimiento inmediato.
+                </p>
+            </div>
+
+            <!-- Contenedor del Formulario y Confirmación -->
+            <div class="bg-white dark:bg-[#14181C] border border-[#DDE4E7] dark:border-[#272F36] p-6 sm:p-10 rounded-sm shadow-sm">
+                
+                <!-- Formulario Interactivo -->
+                <form id="revocationForm" onsubmit="handleRevocationSubmit(event)" class="space-y-6">
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label for="buyerName" class="block text-xs uppercase font-semibold text-charcoal dark:text-ivory mb-1.5">
+                                Nombre y Apellido del Comprador <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="buyerName" required placeholder="Nombre completo" class="w-full px-4 py-2.5 bg-black/5 dark:bg-white/5 border border-[#DDE4E7] dark:border-[#272F36] rounded-sm text-sm focus:outline-none focus:border-[#2DD4BF] text-charcoal dark:text-ivory">
+                        </div>
+
+                        <div>
+                            <label for="buyerEmail" class="block text-xs uppercase font-semibold text-charcoal dark:text-ivory mb-1.5">
+                                Correo Electrónico de la Compra <span class="text-red-500">*</span>
+                            </label>
+                            <input type="email" id="buyerEmail" required placeholder="tu-correo@ejemplo.com" class="w-full px-4 py-2.5 bg-black/5 dark:bg-white/5 border border-[#DDE4E7] dark:border-[#272F36] rounded-sm text-sm focus:outline-none focus:border-[#2DD4BF] text-charcoal dark:text-ivory">
+                            <span class="text-[11px] text-stone mt-1 block">El email con el que abonaste en Mercado Pago o recibiste el enlace.</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label for="orderReference" class="block text-xs uppercase font-semibold text-charcoal dark:text-ivory mb-1.5">
+                                Nº de Orden / Pedido o ID de Mercado Pago <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="orderReference" required placeholder="Ej: #NT-12345 o ID de pago MP" class="w-full px-4 py-2.5 bg-black/5 dark:bg-white/5 border border-[#DDE4E7] dark:border-[#272F36] rounded-sm text-sm focus:outline-none focus:border-[#2DD4BF] text-charcoal dark:text-ivory">
+                            <span class="text-[11px] text-stone mt-1 block">Lo encontrás en el comprobante emitido o en el asunto del email de confirmación.</span>
+                        </div>
+
+                        <div>
+                            <label for="purchaseDate" class="block text-xs uppercase font-semibold text-charcoal dark:text-ivory mb-1.5">
+                                Fecha de Compra <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" id="purchaseDate" required class="w-full px-4 py-2.5 bg-black/5 dark:bg-white/5 border border-[#DDE4E7] dark:border-[#272F36] rounded-sm text-sm focus:outline-none focus:border-[#2DD4BF] text-charcoal dark:text-ivory">
+                            <span class="text-[11px] text-stone mt-1 block">Debe estar comprendida dentro de los 10 días corridos anteriores.</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label for="buyerPhone" class="block text-xs uppercase font-semibold text-charcoal dark:text-ivory mb-1.5">
+                                Teléfono / WhatsApp (Opcional)
+                            </label>
+                            <input type="tel" id="buyerPhone" placeholder="+54 9 3755 000000" class="w-full px-4 py-2.5 bg-black/5 dark:bg-white/5 border border-[#DDE4E7] dark:border-[#272F36] rounded-sm text-sm focus:outline-none focus:border-[#2DD4BF] text-charcoal dark:text-ivory">
+                        </div>
+
+                        <div>
+                            <label for="revocationReason" class="block text-xs uppercase font-semibold text-charcoal dark:text-ivory mb-1.5">
+                                Motivo de la Revocación (Opcional pero recomendable)
+                            </label>
+                            <select id="revocationReason" class="w-full px-4 py-2.5 bg-black/5 dark:bg-white/5 border border-[#DDE4E7] dark:border-[#272F36] rounded-sm text-sm focus:outline-none focus:border-[#2DD4BF] text-charcoal dark:text-ivory">
+                                <option value="Arrepentimiento simple dentro del plazo legal (Ley 24.240)">Arrepentimiento dentro del plazo legal de 10 días</option>
+                                <option value="Compra realizada por error o duplicada">Compra realizada por error o duplicada</option>
+                                <option value="Error en la selección de la fotografía">Error al seleccionar la fotografía del catálogo</option>
+                                <option value="Inconvenientes técnicos con la descarga">Inconvenientes técnicos con la descarga digital</option>
+                                <option value="Otro motivo">Otro motivo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Datos adicionales del pedido -->
+                    <div class="p-4 bg-black/5 dark:bg-white/5 border border-[#DDE4E7] dark:border-[#272F36] rounded-sm space-y-3">
+                        <span class="text-xs uppercase tracking-wider font-bold text-[#0F766E] dark:text-[#2DD4BF] block">Detalles de la Colección o Fotografía</span>
+                        
+                        <div>
+                            <label for="itemDetails" class="block text-xs uppercase font-semibold text-charcoal dark:text-ivory mb-1.5">
+                                Nombre del Álbum, Código de Foto o Enlace de Descarga
+                            </label>
+                            <input type="text" id="itemDetails" placeholder="Ej: Álbum Colectividades 2026, foto #12" class="w-full px-4 py-2.5 bg-white dark:bg-[#14181C] border border-[#DDE4E7] dark:border-[#272F36] rounded-sm text-sm focus:outline-none focus:border-[#2DD4BF] text-charcoal dark:text-ivory">
+                        </div>
+
+                        <div>
+                            <label for="additionalNotes" class="block text-xs uppercase font-semibold text-charcoal dark:text-ivory mb-1.5">
+                                Observaciones adicionales o mensaje
+                            </label>
+                            <textarea id="additionalNotes" rows="2" placeholder="Información complementaria que ayude a agilizar tu reintegro..." class="w-full px-4 py-2 bg-white dark:bg-[#14181C] border border-[#DDE4E7] dark:border-[#272F36] rounded-sm text-sm focus:outline-none focus:border-[#2DD4BF] text-charcoal dark:text-ivory"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Declaración de Voluntad Expresa -->
+                    <div class="pt-2">
+                        <label class="flex items-start space-x-3 cursor-pointer select-none">
+                            <input type="checkbox" id="revocationAcceptance" required class="mt-1 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded cursor-pointer">
+                            <span class="text-xs text-stone leading-relaxed">
+                                <strong>Manifiesto expresamente mi voluntad</strong> de revocar la aceptación del contrato de compraventa y/o licenciamiento de la fotografía digital especificada conforme al Art. 34 de la Ley 24.240. Entiendo que la revocación conlleva la anulación de la licencia de uso y la deshabilitación del enlace de descarga correspondiente.
+                            </span>
+                        </label>
+                    </div>
+
+                    <!-- Botón de Envío -->
+                    <div class="pt-4 border-t border-[#DDE4E7] dark:border-[#272F36] flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <span class="text-xs text-stone">
+                            Plazo de reintegro: <strong>24 a 72 hs hábiles</strong> vía pasarela de pago original.
+                        </span>
+                        <button type="submit" id="submitRevocationBtn" class="w-full sm:w-auto px-6 py-3 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold uppercase tracking-wider transition-all flex items-center justify-center space-x-2 rounded-sm shadow-md group">
+                            <i data-lucide="undo-2" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform"></i>
+                            <span>Confirmar Revocación de Compra</span>
+                        </button>
+                    </div>
+
+                </form>
+
+                <!-- Panel de Confirmación con Código de Trámite (Oculto inicialmente) -->
+                <div id="revocationSuccessPanel" class="hidden text-center py-8 space-y-5">
+                    <div class="w-16 h-16 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto border border-emerald-500/30">
+                        <i data-lucide="check-circle" class="w-8 h-8"></i>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-xs uppercase tracking-widest text-[#0F766E] dark:text-[#2DD4BF] font-semibold block">Solicitud de Revocación Registrada</span>
+                        <h2 class="font-editorial text-2xl sm:text-3xl font-medium">Trámite de Arrepentimiento en Proceso</h2>
+                    </div>
+
+                    <!-- Código Único de Identificación (Res. 424/2020 SCI) -->
+                    <div class="max-w-md mx-auto p-4 bg-black/5 dark:bg-white/5 border border-red-500/40 rounded-sm">
+                        <span class="text-[11px] uppercase tracking-wider text-stone block">Código Identificador de Solicitud de Revocación:</span>
+                        <span id="ticketCodeDisplay" class="font-mono text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400 tracking-widest block my-1">REV-000000</span>
+                        <span class="text-[10px] text-stone block">Conservá este número oficial para consultas o seguimiento de tu reintegro.</span>
+                    </div>
+
+                    <p class="text-xs text-stone max-w-lg mx-auto leading-relaxed">
+                        Conforme a la normativa legal, hemos registrado formalmente tu manifestación de voluntad. El reintegro total del importe abonado será procesado a través de <strong>Mercado Pago</strong> hacia la misma tarjeta o cuenta de origen en un plazo de <strong>24 a 72 horas hábiles</strong>.
+                    </p>
+
+                    <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <a id="emailBackupLink" href="#" class="px-4 py-2 border border-[#DDE4E7] dark:border-[#272F36] hover:border-[#2DD4BF] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center space-x-1.5 rounded-sm">
+                            <i data-lucide="mail" class="w-3.5 h-3.5"></i>
+                            <span>Enviar copia por Email</span>
+                        </a>
+                        <a href="index.html#/" class="px-4 py-2 bg-[#0F766E] dark:bg-[#2DD4BF] text-white dark:text-[#0E1114] text-xs font-semibold uppercase tracking-wider transition-colors rounded-sm">
+                            Volver a la Galería
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Información Complementaria de Garantía Legal -->
+            <div class="mt-8 p-6 bg-black/5 dark:bg-white/5 border border-[#DDE4E7] dark:border-[#272F36] rounded-sm text-xs text-stone space-y-3">
+                <div class="flex items-center space-x-2 text-charcoal dark:text-ivory font-semibold uppercase tracking-wider text-[11px]">
+                    <i data-lucide="info" class="w-4 h-4 text-[#0F766E] dark:text-[#2DD4BF]"></i>
+                    <span>Información Legal sobre el Derecho de Revocación</span>
+                </div>
+                <p class="leading-relaxed">
+                    <strong>Efectos de la revocación:</strong> La revocación no genera ningún gasto ni penalidad dineraria para el consumidor. En caso de fotografías digitales entregadas mediante enlace de descarga, la revocación deja sin efecto la licencia otorgada para su exhibición o uso personal, y los enlaces de descarga quedarán inhabilitados.
+                </p>
+                <p class="leading-relaxed">
+                    <strong>Organismo de Aplicación:</strong> Dirección Nacional de Defensa del Consumidor y Arbitraje del Consumo. Para iniciar un reclamo administrativo oficial o consultar tus derechos, podés ingresar en <a href="https://www.argentina.gob.ar/produccion/defensadelconsumidor/formulario" target="_blank" rel="noopener noreferrer" class="text-[#0F766E] dark:text-[#2DD4BF] underline">argentina.gob.ar/defensadelconsumidor</a> o comunicarte a la línea gratuita nacional 0800-666-1518.
+                </p>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- PIE DE PÁGINA                              -->
+    <!-- ========================================== -->
+    <footer class="border-t border-[#DDE4E7] dark:border-[#272F36] bg-[#E8EEF0] dark:bg-[#0E1114] py-8 text-xs text-stone">
+        <div class="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <div>
+                <span>© 2026 Nicolas Techeira Fotografías. Todos los derechos reservados.</span>
+                <span class="block text-[11px] mt-0.5">CUIT: <span data-legal="cuit">[CUIT]</span> · <span data-legal="legalAddress">[DOMICILIO LEGAL]</span></span>
+            </div>
+            <div class="flex flex-wrap items-center justify-center gap-4 text-[11px]">
+                <a href="terminos.html" class="hover:text-charcoal dark:hover:text-ivory transition-colors">Términos y Condiciones</a>
+                <span>•</span>
+                <a href="privacidad.html" class="hover:text-charcoal dark:hover:text-ivory transition-colors">Privacidad</a>
+                <span>•</span>
+                <a href="aviso-legal.html" class="hover:text-charcoal dark:hover:text-ivory transition-colors">Aviso Legal</a>
+                <span>•</span>
+                <a href="cookies.html" class="hover:text-charcoal dark:hover:text-ivory transition-colors">Cookies</a>
+                <span>•</span>
+                <a href="retiro-de-fotos.html" class="hover:text-charcoal dark:hover:text-ivory transition-colors">Retiro de Fotos</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts de Configuración y Utilidades -->
+    <script src="legal-config.js"></script>
+    <script>
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        function toggleLocalTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            const mode = isDark ? 'dark' : 'light';
+            localStorage.setItem('nt_theme', mode);
+            localStorage.setItem('picsel_theme', mode);
+            updateThemeIcon(isDark);
+        }
+
+        function updateThemeIcon(isDark) {
+            const icon = document.getElementById('themeIcon');
+            if (icon) {
+                icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            updateThemeIcon(isDark);
+
+            // Pre-rellenar fecha con la fecha actual si está vacío
+            const dateInput = document.getElementById('purchaseDate');
+            if (dateInput && !dateInput.value) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+        });
+
+        // Manejador del envío del formulario de revocación / arrepentimiento
+        function handleRevocationSubmit(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('buyerName').value.trim();
+            const email = document.getElementById('buyerEmail').value.trim();
+            const orderRef = document.getElementById('orderReference').value.trim();
+            const purchaseDate = document.getElementById('purchaseDate').value;
+            const phone = document.getElementById('buyerPhone').value.trim();
+            const reason = document.getElementById('revocationReason').value;
+            const itemDetails = document.getElementById('itemDetails').value.trim();
+            const notes = document.getElementById('additionalNotes').value.trim();
+
+            // Generar código de identificación único de solicitud (Res. 424/2020)
+            const randomCode = Math.floor(100000 + Math.random() * 900000);
+            const ticketCode = `REV-${randomCode}`;
+
+            // Guardar registro de solicitud de revocación en localStorage
+            const revocationData = {
+                ticketCode,
+                date: new Date().toISOString(),
+                name,
+                email,
+                orderRef,
+                purchaseDate,
+                phone,
+                reason,
+                itemDetails,
+                notes,
+                status: 'pending_refund'
+            };
+
+            try {
+                const history = JSON.parse(localStorage.getItem('nt_revocation_requests') || '[]');
+                history.push(revocationData);
+                localStorage.setItem('nt_revocation_requests', JSON.stringify(history));
+            } catch (e) {
+                console.warn('No se pudo guardar registro local:', e);
+            }
+
+            // Ocultar formulario y mostrar panel de éxito con código identificador
+            document.getElementById('revocationForm').classList.add('hidden');
+            const successPanel = document.getElementById('revocationSuccessPanel');
+            successPanel.classList.remove('hidden');
+            document.getElementById('ticketCodeDisplay').textContent = ticketCode;
+
+            // Configurar enlace de copia por correo electrónico (mailto)
+            const cleanTargetEmail = (LEGAL_CONFIG.contactEmail || 'contacto@nicolastecheira.com').replace(/^\[|\]$/g, '').trim();
+            const subject = encodeURIComponent(`[${ticketCode}] Solicitud de Revocación de Compra (Botón de Arrepentimiento) - ${name}`);
+            const body = encodeURIComponent(
+                `SOLICITUD DE REVOCACIÓN DE COMPRA (Res. 424/2020 SCI - Art. 34 Ley 24.240)\n\n` +
+                `Código de Identificación de Trámite: ${ticketCode}\n` +
+                `Fecha de Solicitud: ${new Date().toLocaleString('es-AR')}\n\n` +
+                `DATOS DEL COMPRADOR:\n` +
+                `Nombre y Apellido: ${name}\n` +
+                `Email registrado: ${email}\n` +
+                `Teléfono: ${phone || 'No especificado'}\n\n` +
+                `DATOS DE LA COMPRA:\n` +
+                `Nº de Orden / ID de Transacción: ${orderRef}\n` +
+                `Fecha de Compra: ${purchaseDate}\n` +
+                `Fotografía / Álbum: ${itemDetails || 'No especificado'}\n` +
+                `Motivo: ${reason}\n` +
+                `Observaciones adicionales: ${notes || 'Sin observaciones'}\n\n` +
+                `Manifestación expresa de voluntad de revocación aceptada formalmente en el formulario web.`
+            );
+            document.getElementById('emailBackupLink').href = `mailto:${cleanTargetEmail}?subject=${subject}&body=${body}`;
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            window.scrollTo({ top: 100, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

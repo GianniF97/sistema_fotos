@@ -40,7 +40,10 @@ const app = {
             const drawer = document.getElementById('mobileMenuDrawer');
             const menuBtn = document.getElementById('mobileMenuBtn');
             if (drawer && !drawer.classList.contains('hidden')) {
-                if (!drawer.contains(e.target) && !menuBtn?.contains(e.target)) {
+                if (menuBtn && (menuBtn === e.target || menuBtn.contains(e.target))) {
+                    return;
+                }
+                if (!drawer.contains(e.target)) {
                     this.closeMobileMenu();
                 }
             }
@@ -347,7 +350,11 @@ const app = {
         window.location.hash = '#/';
     },
 
-    toggleMobileMenu() {
+    toggleMobileMenu(event) {
+        if (event) {
+            if (typeof event.stopPropagation === 'function') event.stopPropagation();
+            if (typeof event.preventDefault === 'function') event.preventDefault();
+        }
         const drawer = document.getElementById('mobileMenuDrawer');
         const icon = document.getElementById('mobileMenuIcon');
         const btn = document.getElementById('mobileMenuBtn');
