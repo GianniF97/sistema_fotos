@@ -35,6 +35,17 @@ const app = {
         // Keyboard navigation (Esc to close modals or skip intro, Arrows for lightbox)
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
 
+        // Cerrar menú móvil al hacer clic fuera del drawer
+        document.addEventListener('click', (e) => {
+            const drawer = document.getElementById('mobileMenuDrawer');
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            if (drawer && !drawer.classList.contains('hidden')) {
+                if (!drawer.contains(e.target) && !menuBtn?.contains(e.target)) {
+                    this.closeMobileMenu();
+                }
+            }
+        });
+
         // Wait for database ready
         await window.picselDB.ensureReady();
 
@@ -212,6 +223,7 @@ const app = {
     // ROUTING & VIEW CONTROLLER
     // ============================================================
     async handleRouting() {
+        this.closeMobileMenu();
         const hash = window.location.hash || '#/';
 
         // 1. Manejo de anclas a secciones internas del portafolio
@@ -331,7 +343,47 @@ const app = {
     },
 
     goHome() {
+        this.closeMobileMenu();
         window.location.hash = '#/';
+    },
+
+    toggleMobileMenu() {
+        const drawer = document.getElementById('mobileMenuDrawer');
+        const icon = document.getElementById('mobileMenuIcon');
+        const btn = document.getElementById('mobileMenuBtn');
+        if (!drawer) return;
+
+        const isHidden = drawer.classList.contains('hidden');
+        if (isHidden) {
+            drawer.classList.remove('hidden');
+            if (btn) btn.setAttribute('aria-expanded', 'true');
+            if (icon) {
+                icon.setAttribute('data-lucide', 'x');
+                this.refreshIcons();
+            }
+            if (typeof gsap !== 'undefined') {
+                gsap.fromTo(drawer, 
+                    { opacity: 0, y: -10 }, 
+                    { opacity: 1, y: 0, duration: 0.2, ease: 'power2.out' }
+                );
+            }
+        } else {
+            this.closeMobileMenu();
+        }
+    },
+
+    closeMobileMenu() {
+        const drawer = document.getElementById('mobileMenuDrawer');
+        const icon = document.getElementById('mobileMenuIcon');
+        const btn = document.getElementById('mobileMenuBtn');
+        if (!drawer || drawer.classList.contains('hidden')) return;
+
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+        if (icon) {
+            icon.setAttribute('data-lucide', 'menu');
+            this.refreshIcons();
+        }
+        drawer.classList.add('hidden');
     },
 
     // ============================================================
@@ -810,6 +862,7 @@ const app = {
                 this.skipIntro();
                 return;
             }
+            this.closeMobileMenu();
             this.closeLightbox();
             this.closeSearchModal();
             this.closeCartModal();
