@@ -359,6 +359,9 @@ class NicolasTecheiraDB {
                 const res = await fetch('/api/albums?all=1', {
                     headers: this.getAuthHeaders()
                 });
+                if (res.status === 401 || res.status === 403) {
+                    this.handleAuthError(res);
+                }
                 if (res.ok) {
                     const json = await res.json();
                     if (json.ok && Array.isArray(json.data)) {
@@ -366,6 +369,7 @@ class NicolasTecheiraDB {
                     }
                 }
             } catch (err) {
+                if (err.isAuthError) throw err;
                 console.warn('[MariaDB] Falló getAllAlbums remoto:', err);
             }
         }
@@ -487,11 +491,15 @@ class NicolasTecheiraDB {
                     headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify(albumData)
                 });
+                if (res.status === 401 || res.status === 403) {
+                    this.handleAuthError(res);
+                }
                 if (res.ok) {
                     const json = await res.json();
                     if (json.ok && json.data) return json.data;
                 }
             } catch (err) {
+                if (err.isAuthError) throw err;
                 console.warn('[MariaDB] Falló createAlbum remoto:', err);
             }
         }
@@ -544,11 +552,15 @@ class NicolasTecheiraDB {
                     headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify(updates)
                 });
+                if (res.status === 401 || res.status === 403) {
+                    this.handleAuthError(res);
+                }
                 if (res.ok) {
                     const json = await res.json();
                     if (json.ok && json.data) return json.data;
                 }
             } catch (err) {
+                if (err.isAuthError) throw err;
                 console.warn('[MariaDB] Falló updateAlbum remoto:', err);
             }
         }
@@ -609,8 +621,12 @@ class NicolasTecheiraDB {
                     method: 'DELETE',
                     headers: this.getAuthHeaders()
                 });
+                if (res.status === 401 || res.status === 403) {
+                    this.handleAuthError(res);
+                }
                 if (res.ok) return true;
             } catch (err) {
+                if (err.isAuthError) throw err;
                 console.warn('[MariaDB] Falló deleteAlbum:', err);
             }
         }
@@ -702,11 +718,15 @@ class NicolasTecheiraDB {
                         sort_order: Number(photoData.order || photoData.sort_order || 1)
                     })
                 });
+                if (res.status === 401 || res.status === 403) {
+                    this.handleAuthError(res);
+                }
                 if (res.ok) {
                     const json = await res.json();
                     if (json.ok && json.data) return json.data;
                 }
             } catch (err) {
+                if (err.isAuthError) throw err;
                 console.warn('[MariaDB] Error addPhotoToAlbum:', err);
             }
         }
@@ -757,8 +777,12 @@ class NicolasTecheiraDB {
                     method: 'DELETE',
                     headers: this.getAuthHeaders()
                 });
+                if (res.status === 401 || res.status === 403) {
+                    this.handleAuthError(res);
+                }
                 if (res.ok) return true;
             } catch (err) {
+                if (err.isAuthError) throw err;
                 console.warn('[MariaDB] Error al eliminar foto:', err);
             }
         }
@@ -1051,6 +1075,22 @@ class NicolasTecheiraDB {
             headers['Authorization'] = `Bearer ${session.token}`;
         }
         return headers;
+    }
+
+    handleAuthError(res) {
+        if (res && (res.status === 401 || res.status === 403)) {
+            localStorage.removeItem('picsel_admin_session');
+            if (typeof window !== 'undefined') {
+                if (window.app && typeof window.app.showToast === 'function') {
+                    window.app.showToast('Tu sesión ha expirado o no tienes permisos. Por favor inicia sesión nuevamente.', 'error');
+                }
+                window.location.hash = '#/admin/login';
+            }
+            const err = new Error(res.status === 401 ? 'Sesión no autorizada o expirada.' : 'Permisos insuficientes.');
+            err.status = res.status;
+            err.isAuthError = true;
+            throw err;
+        }
     }
 
     async logout() {

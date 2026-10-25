@@ -32,7 +32,7 @@ async function checkConnection() {
         connection.release();
         return { ok: true, host: dbConfig.host, database: dbConfig.database };
     } catch (error) {
-        return { ok: false, error: error.message };
+        return { ok: false, code: error.code || 'DB_CONNECTION_ERROR', error: 'No se pudo conectar a la base de datos.' };
     }
 }
 

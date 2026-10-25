@@ -291,6 +291,22 @@ async function handleApiRequest(req, res) {
     if (photosMatch && method === 'GET') {
         try {
             const albumId = parseInt(photosMatch[1], 10);
+
+            // Validar existencia y visibilidad del álbum padre
+            const [albumRows] = await pool.query('SELECT status FROM albums WHERE id = ? LIMIT 1', [albumId]);
+            if (albumRows.length === 0) {
+                sendJson(res, 404, { ok: false, error: 'Álbum no encontrado.' });
+                return true;
+            }
+
+            if (albumRows[0].status !== 'published') {
+                const adminSession = verifyAdminSession(req);
+                if (!adminSession || adminSession.role !== 'admin') {
+                    sendJson(res, 404, { ok: false, error: 'Álbum no encontrado.' });
+                    return true;
+                }
+            }
+
             const [photos] = await pool.query(
                 'SELECT * FROM photos WHERE album_id = ? ORDER BY sort_order ASC, id ASC',
                 [albumId]
