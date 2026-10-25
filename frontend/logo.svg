@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 160" fill="none">
+    <!-- Nicolas Techeira Fotografías - Vector Brand Identity (Graphite & Teal Edition) -->
+    <!-- NT Aperture Monogram -->
+    <g transform="translate(10, 16) scale(0.85)">
+        <!-- N left stem -->
+        <rect x="18" y="10" width="28" height="128" fill="currentColor"/>
+        <!-- T horizontal bar -->
+        <rect x="74" y="10" width="76" height="24" fill="currentColor"/>
+        <!-- T vertical stem -->
+        <rect x="98" y="34" width="28" height="104" fill="currentColor"/>
+        <!-- N diagonal connections -->
+        <polygon points="46,10 74,10 74,38 46,38" fill="currentColor"/>
+        <polygon points="46,110 74,80 74,138 46,138" fill="currentColor"/>
+        <!-- Aperture Circle -->
+        <circle cx="68" cy="80" r="38" fill="#14181C" class="nt-aperture-bg" stroke="#2DD4BF" stroke-width="3"/>
+        <!-- Blades -->
+        <polygon points="68,44 94,54 82,78 60,66" fill="currentColor" stroke="#14181C" class="nt-blade-stroke" stroke-width="1.8"/>
+        <polygon points="94,54 104,80 82,92 76,70" fill="currentColor" stroke="#14181C" class="nt-blade-stroke" stroke-width="1.8"/>
+        <polygon points="104,80 88,106 66,94 78,78" fill="currentColor" stroke="#14181C" class="nt-blade-stroke" stroke-width="1.8"/>
+        <polygon points="88,106 58,114 54,90 74,86" fill="currentColor" stroke="#14181C" class="nt-blade-stroke" stroke-width="1.8"/>
+        <polygon points="58,114 36,94 52,76 66,88" fill="currentColor" stroke="#14181C" class="nt-blade-stroke" stroke-width="1.8"/>
+        <polygon points="36,94 44,58 68,68 56,86" fill="currentColor" stroke="#14181C" class="nt-blade-stroke" stroke-width="1.8"/>
+        <!-- Aperture Center in Teal -->
+        <polygon points="68,68 76,70 78,78 74,86 66,88 56,86" fill="#2DD4BF" class="nt-aperture-center"/>
+    </g>
+
+    <!-- Typography in Space Grotesk -->
+    <g transform="translate(170, 0)">
+        <text x="0" y="74" font-family="'Space Grotesk', -apple-system, sans-serif" font-weight="700" font-size="28" letter-spacing="0.08em" fill="currentColor">
+            NICOLAS TECHEIRA
+        </text>
+        <text x="2" y="108" font-family="'Space Grotesk', -apple-system, sans-serif" font-weight="500" font-size="14" letter-spacing="0.38em" fill="#2DD4BF">
+            FOTOGRAFÍAS
+        </text>
+    </g>
+</svg>

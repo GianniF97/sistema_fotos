@@ -10,20 +10,29 @@ const app = {
     currentAlbumPhotos: [],
     currentFilteredPhotos: null,
     lightboxIndex: 0,
+    lightboxIsZoomed: false,
     cart: [],
     formPhotosTemp: [],
+    cachedAlbums: [],
+    albumSearchQuery: '',
+    currentCategoryFilter: 'all',
     adminSearchQuery: '',
     adminStatusFilter: 'all',
+    introTimeline: null,
+    isIntroPlaying: false,
 
     // Initialization
     async init() {
         // Initialize theme
         this.initTheme();
 
+        // Check & Run intro animation on first load if not seen and not prefers-reduced-motion
+        this.initIntroAnimation();
+
         // Listen for route changes
         window.addEventListener('hashchange', () => this.handleRouting());
 
-        // Keyboard navigation (Esc to close modals, Arrows for lightbox)
+        // Keyboard navigation (Esc to close modals or skip intro, Arrows for lightbox)
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
 
         // Wait for database ready
@@ -34,6 +43,10 @@ const app = {
 
         // Refresh Lucide icons
         this.refreshIcons();
+
+        // 3D Tilt & Micro-interacciones
+        this.initTiltCards();
+        this.initHeroParallax();
     },
 
     refreshIcons() {
@@ -64,7 +77,7 @@ const app = {
         localStorage.setItem('nt_theme', mode);
         localStorage.setItem('picsel_theme', mode);
         this.updateThemeIcon();
-        this.showToast(isDark ? 'Modo Oscuro Carbón activado' : 'Modo Claro Cálido activado');
+        this.showToast(isDark ? 'Modo Oscuro Carbón activado' : 'Modo Claro Marfil activado');
     },
 
     updateThemeIcon() {
@@ -73,6 +86,125 @@ const app = {
         if (icon) {
             icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
             this.refreshIcons();
+        }
+    },
+
+    // ============================================================
+    // INTRO ENTRANCE ANIMATION (Curtain Reveal + Teal Light Beam)
+    // ============================================================
+    initIntroAnimation() {
+        const overlay = document.getElementById('introOverlay');
+        if (!overlay) return;
+
+        const alreadySeen = sessionStorage.getItem('nt_intro_seen');
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (alreadySeen === 'true' || prefersReduced) {
+            overlay.classList.add('is-hidden');
+            return;
+        }
+
+        this.isIntroPlaying = true;
+        this.playIntroTimeline();
+    },
+
+    playIntroTimeline() {
+        const overlay = document.getElementById('introOverlay');
+        const curtainTop = overlay?.querySelector('.intro-curtain-top');
+        const curtainBottom = overlay?.querySelector('.intro-curtain-bottom');
+        const introContent = document.getElementById('introContent');
+        const beamLine = document.getElementById('introBeamLine');
+        const skipBtn = document.getElementById('introSkipBtn');
+
+        if (!overlay || !curtainTop || !curtainBottom || !introContent || !beamLine) {
+            if (overlay) overlay.classList.add('is-hidden');
+            return;
+        }
+
+        if (typeof gsap === 'undefined') {
+            setTimeout(() => this.skipIntro(), 1400);
+            return;
+        }
+
+        // Configuración inicial de estados visuales
+        overlay.classList.remove('is-hidden');
+        gsap.set(overlay, { display: 'flex', opacity: 1 });
+        gsap.set([curtainTop, curtainBottom], { yPercent: 0 });
+        gsap.set(introContent, { opacity: 0, scale: 0.94 });
+        gsap.set(beamLine, { scaleX: 0 });
+        if (skipBtn) gsap.set(skipBtn, { opacity: 0 });
+
+        const tl = gsap.timeline({
+            onComplete: () => {
+                this.isIntroPlaying = false;
+                overlay.classList.add('is-hidden');
+                sessionStorage.setItem('nt_intro_seen', 'true');
+                this.playHeroEntrance();
+            }
+        });
+
+        this.introTimeline = tl;
+
+        // Secuencia cinematográfica de ~1.8 segundos:
+        // 1. Logo aparece suavemente con escala
+        // 2. Haz de luz teal se expande desde el centro con resplandor
+        // 3. Breve momento para apreciar la identidad
+        // 4. Logo y haz se desvanecen
+        // 5. Las cortinas de grafito se abren (arriba y abajo) revelando la web
+        tl.to(introContent, { opacity: 1, scale: 1, duration: 0.6, ease: 'power2.out' })
+          .to(beamLine, { scaleX: 1, duration: 0.5, ease: 'power3.out' }, '-=0.2')
+          .to(skipBtn, { opacity: 1, duration: 0.3 }, '-=0.3')
+          .to({}, { duration: 0.35 })
+          .to([introContent, skipBtn], { opacity: 0, duration: 0.3, ease: 'power2.in' })
+          .to(curtainTop, { yPercent: -101, duration: 0.75, ease: 'power3.inOut' }, '-=0.05')
+          .to(curtainBottom, { yPercent: 101, duration: 0.75, ease: 'power3.inOut' }, '<');
+    },
+
+    skipIntro() {
+        const overlay = document.getElementById('introOverlay');
+        if (!overlay) return;
+
+        if (this.introTimeline) {
+            this.introTimeline.kill();
+            this.introTimeline = null;
+        }
+        this.isIntroPlaying = false;
+
+        const curtainTop = overlay.querySelector('.intro-curtain-top');
+        const curtainBottom = overlay.querySelector('.intro-curtain-bottom');
+
+        if (typeof gsap !== 'undefined' && curtainTop && curtainBottom) {
+            gsap.to([curtainTop, curtainBottom], {
+                yPercent: (i) => i === 0 ? -101 : 101,
+                duration: 0.28,
+                ease: 'power2.inOut',
+                onComplete: () => {
+                    overlay.classList.add('is-hidden');
+                    sessionStorage.setItem('nt_intro_seen', 'true');
+                    this.playHeroEntrance();
+                }
+            });
+        } else {
+            overlay.classList.add('is-hidden');
+            sessionStorage.setItem('nt_intro_seen', 'true');
+            this.playHeroEntrance();
+        }
+    },
+
+    playHeroEntrance() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (typeof gsap === 'undefined') return;
+
+        const hero = document.getElementById('viewPublicPortfolio');
+        if (hero && !hero.classList.contains('hidden')) {
+            gsap.fromTo('#mainHeader', 
+                { y: -20, opacity: 0 }, 
+                { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }
+            );
+            gsap.fromTo('#viewPublicPortfolio h1, #viewPublicPortfolio p, .editorial-hero-container',
+                { y: 25, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.65, stagger: 0.08, ease: 'power3.out' }
+            );
         }
     },
 
@@ -142,88 +274,125 @@ const app = {
     // ============================================================
     // PUBLIC PORTFOLIO LOGIC — EDITORIAL ASYMMETRIC SHOWCASE
     // ============================================================
-    async loadPublicAlbums(filterCategory = 'all') {
+    handleAlbumSearch(query) {
+        this.albumSearchQuery = (query || '').toLowerCase().trim();
+        this.renderFilteredAlbums();
+    },
+
+    renderFilteredAlbums() {
         const grid = document.getElementById('albumsGrid');
+        if (!grid || !this.cachedAlbums) return;
+
+        let filtered = this.cachedAlbums;
+
+        // Filtro por categoría activa
+        if (this.currentCategoryFilter && this.currentCategoryFilter !== 'all') {
+            filtered = filtered.filter(a => a.category && a.category.toLowerCase() === this.currentCategoryFilter.toLowerCase());
+        }
+
+        // Filtro por texto de búsqueda
+        if (this.albumSearchQuery) {
+            filtered = filtered.filter(a => 
+                (a.title && a.title.toLowerCase().includes(this.albumSearchQuery)) ||
+                (a.date && a.date.toLowerCase().includes(this.albumSearchQuery)) ||
+                (a.category && a.category.toLowerCase().includes(this.albumSearchQuery)) ||
+                (a.description && a.description.toLowerCase().includes(this.albumSearchQuery))
+            );
+        }
+
+        if (filtered.length === 0) {
+            grid.innerHTML = `
+                <div class="col-span-full text-center py-16 bg-white dark:bg-charcoal-surface border border-charcoal/10 dark:border-ivory/10 p-8 shadow-sm">
+                    <i data-lucide="search-x" class="w-10 h-10 text-stone mx-auto mb-3 opacity-60"></i>
+                    <h4 class="font-editorial text-2xl text-charcoal dark:text-ivory mb-1">Sin colecciones encontradas</h4>
+                    <p class="text-xs text-stone">No se encontraron álbumes que coincidan con "${this.albumSearchQuery || this.currentCategoryFilter}".</p>
+                </div>
+            `;
+            this.refreshIcons();
+            return;
+        }
+
+        grid.innerHTML = filtered.map((album, index) => {
+            const indexFormatted = String(index + 1).padStart(2, '0');
+            return `
+                <article onclick="window.location.hash = '#/album/${album.slug}'" 
+                         class="album-card-editorial group cursor-pointer tilt-card"
+                         data-tilt>
+                    <div class="tilt-card-glare"></div>
+                    
+                    <!-- Contenedor de la Imagen con Ratio Editorial 4:3 -->
+                    <div class="image-wrap aspect-[4/3] relative overflow-hidden bg-charcoal/5 dark:bg-ivory/5">
+                        <img src="${album.cover_url}" 
+                             alt="${album.title}" 
+                             loading="lazy" 
+                             onerror="this.src='https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&q=80&w=900'"
+                             class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700">
+                        
+                        <!-- Insignia Editorial en Esquina Superior -->
+                        <div class="editorial-album-badge">
+                            <span class="badge-index">${indexFormatted}</span>
+                            <span class="badge-cat">${album.category || 'Fiestas'}</span>
+                        </div>
+
+                        <!-- Contador de Fotos en Esquina Inferior -->
+                        <span class="absolute bottom-3 right-3 bg-charcoal/90 text-ivory text-[11px] font-mono px-2.5 py-1 flex items-center space-x-1.5 border border-ivory/10 shadow-md backdrop-blur-sm">
+                            <i data-lucide="camera" class="w-3 h-3 text-bronze"></i>
+                            <span>${album.photo_count || 0} fotos</span>
+                        </span>
+                    </div>
+
+                    <!-- Pie de la Tarjeta Editorial -->
+                    <div class="p-5 border-t border-charcoal/10 dark:border-ivory/10 flex flex-col justify-between flex-1 bg-white dark:bg-charcoal-surface">
+                        <div>
+                            <h3 class="font-editorial text-xl sm:text-2xl font-normal text-charcoal dark:text-ivory group-hover:text-bronze transition-colors uppercase tracking-tight mb-1">
+                                ${album.title}
+                            </h3>
+                            <p class="text-xs text-stone">
+                                ${album.date || 'Reciente'}
+                            </p>
+                        </div>
+                        
+                        <div class="pt-4 flex items-center justify-between text-xs border-t border-charcoal/5 dark:border-ivory/5 mt-3">
+                            <span class="text-stone">Precio ref.</span>
+                            <span class="font-bold text-charcoal dark:text-ivory font-editorial text-base">$ ${Number(album.price || 4000).toLocaleString('es-AR')}</span>
+                        </div>
+                    </div>
+
+                </article>
+            `;
+        }).join('');
+
+        this.refreshIcons();
+        this.initTiltCards();
+
+        if (typeof gsap !== 'undefined' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            gsap.fromTo('.album-card-editorial', 
+                { opacity: 0, y: 20 }, 
+                { opacity: 1, y: 0, duration: 0.5, stagger: 0.07, ease: 'power2.out' }
+            );
+        }
+    },
+
+    async loadPublicAlbums(filterCategory = 'all') {
+        this.currentCategoryFilter = filterCategory;
+        const grid = document.getElementById('albumsGrid');
+        if (!grid) return;
+
         grid.innerHTML = `
             <div class="col-span-full text-center py-20">
                 <div class="inline-block w-8 h-8 border-2 border-bronze border-t-transparent rounded-full animate-spin mb-3"></div>
-                <p class="font-mono text-xs uppercase tracking-widest text-stone">Cargando colecciones fotográficas...</p>
+                <p class="text-xs uppercase tracking-widest text-stone">Cargando colecciones fotográficas...</p>
             </div>
         `;
 
         try {
             const albums = await window.picselDB.getPublishedAlbums();
-
-            let filtered = albums;
-            if (filterCategory !== 'all') {
-                filtered = albums.filter(a => a.category && a.category.toLowerCase() === filterCategory.toLowerCase());
-            }
-
-            if (!filtered || filtered.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full text-center py-20 bg-white dark:bg-card border border-carbon/10 dark:border-warmwhite/10 p-10">
-                        <i data-lucide="image-off" class="w-10 h-10 text-stone mx-auto mb-3"></i>
-                        <h4 class="font-editorial text-2xl text-carbon dark:text-warmwhite mb-1">Sin colecciones en esta categoría</h4>
-                        <p class="font-mono text-xs text-stone">No se encontraron álbumes publicados bajo el filtro seleccionado.</p>
-                    </div>
-                `;
-                this.refreshIcons();
-                return;
-            }
-
-            grid.innerHTML = filtered.map((album, index) => {
-                const indexFormatted = String(index + 1).padStart(2, '0');
-                return `
-                    <article onclick="window.location.hash = '#/album/${album.slug}'" 
-                             class="album-card-editorial group">
-                        
-                        <!-- Contenedor de la Imagen con Ratio Editorial 4:3 -->
-                        <div class="image-wrap aspect-[4/3]">
-                            <img src="${album.cover_url}" 
-                                 alt="${album.title}" 
-                                 loading="lazy" 
-                                 onerror="this.src='https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&q=80&w=900'"
-                                 class="w-full h-full">
-                            
-                            <!-- Insignia Editorial en Esquina Superior -->
-                            <div class="editorial-album-badge">
-                                <span class="badge-index">${indexFormatted}</span>
-                                <span class="badge-cat">${album.category || 'Fiestas'}</span>
-                            </div>
-
-                            <!-- Contador de Fotos en Esquina Inferior -->
-                            <span class="absolute bottom-3 right-3 bg-carbon/90 text-warmwhite text-[11px] font-mono px-2.5 py-1 flex items-center space-x-1.5 border border-warmwhite/10 shadow-md">
-                                <i data-lucide="camera" class="w-3 h-3 text-bronze"></i>
-                                <span>${album.photo_count || 0} fotos</span>
-                            </span>
-                        </div>
-
-                        <!-- Pie de la Tarjeta Editorial -->
-                        <div class="p-5 border-t border-carbon/10 dark:border-warmwhite/10 flex flex-col justify-between">
-                            <div>
-                                <h3 class="font-editorial text-xl sm:text-2xl font-normal text-carbon dark:text-warmwhite group-hover:text-bronze transition-colors uppercase tracking-tight mb-1">
-                                    ${album.title}
-                                </h3>
-                                <p class="font-mono text-xs text-stone-dark dark:text-stone">
-                                    ${album.date || 'Reciente'}
-                                </p>
-                            </div>
-                            
-                            <div class="pt-4 flex items-center justify-between text-xs font-mono border-t border-carbon/5 dark:border-warmwhite/5 mt-3">
-                                <span class="text-stone">Precio ref.</span>
-                                <span class="font-bold text-carbon dark:text-warmwhite">$ ${Number(album.price || 4000).toLocaleString('es-AR')}</span>
-                            </div>
-                        </div>
-
-                    </article>
-                `;
-            }).join('');
-
-            this.refreshIcons();
+            this.cachedAlbums = albums || [];
+            this.renderFilteredAlbums();
         } catch (error) {
             console.error('Error al cargar colecciones:', error);
             grid.innerHTML = `
-                <div class="col-span-full text-center py-16 text-red-500 font-mono text-xs">
+                <div class="col-span-full text-center py-16 text-red-500 text-xs">
                     <p>Ocurrió un error al cargar las colecciones desde la base de datos.</p>
                 </div>
             `;
@@ -231,6 +400,7 @@ const app = {
     },
 
     filterByCategory(category) {
+        this.currentCategoryFilter = category;
         document.querySelectorAll('.category-tab-editorial').forEach(btn => {
             const btnCat = btn.getAttribute('data-category');
             if (btnCat === category) {
@@ -240,7 +410,7 @@ const app = {
             }
         });
 
-        this.loadPublicAlbums(category);
+        this.renderFilteredAlbums();
     },
 
     // ============================================================
@@ -311,7 +481,58 @@ const app = {
         const photos = await window.picselDB.getPhotosByAlbum(album.id);
         this.currentAlbumPhotos = photos;
         this.renderAlbumPhotos(photos);
+        this.updateAlbumSelectionBadge();
         this.refreshIcons();
+    },
+
+    selectAllPhotos() {
+        const photos = this.currentFilteredPhotos || this.currentAlbumPhotos;
+        if (!photos || photos.length === 0) return;
+
+        let addedCount = 0;
+        photos.forEach(photo => {
+            const alreadyIn = this.cart.some(item => String(item.id) === String(photo.id));
+            if (!alreadyIn) {
+                this.cart.push({
+                    id: photo.id,
+                    url: photo.url,
+                    albumTitle: this.currentAlbum ? this.currentAlbum.title : 'Evento',
+                    price: this.currentAlbum ? this.currentAlbum.price : 4000
+                });
+                addedCount++;
+            }
+        });
+
+        this.updateCartUI();
+        this.renderAlbumPhotos(photos);
+        this.showToast(`Se agregaron ${addedCount > 0 ? addedCount : 'todas las'} fotos a tu selección`);
+    },
+
+    deselectAllPhotos() {
+        const photos = this.currentFilteredPhotos || this.currentAlbumPhotos;
+        if (!photos || photos.length === 0) return;
+
+        const photoIdSet = new Set(photos.map(p => String(p.id)));
+        this.cart = this.cart.filter(item => !photoIdSet.has(String(item.id)));
+
+        this.updateCartUI();
+        this.renderAlbumPhotos(photos);
+        this.showToast('Se removieron las fotos de este álbum de la selección');
+    },
+
+    updateAlbumSelectionBadge() {
+        const badge = document.getElementById('albumSelectedCountBadge');
+        if (!badge || !this.currentAlbum || !this.currentAlbumPhotos) return;
+
+        const albumPhotoIds = new Set(this.currentAlbumPhotos.map(p => String(p.id)));
+        const selectedCount = this.cart.filter(item => albumPhotoIds.has(String(item.id))).length;
+
+        if (selectedCount > 0) {
+            badge.classList.remove('hidden');
+            badge.textContent = `${selectedCount} seleccionada${selectedCount > 1 ? 's' : ''}`;
+        } else {
+            badge.classList.add('hidden');
+        }
     },
 
     renderAlbumPhotos(photos) {
@@ -319,10 +540,10 @@ const app = {
 
         if (!photos || photos.length === 0) {
             grid.innerHTML = `
-                <div class="col-span-full text-center py-20 bg-white dark:bg-card border border-carbon/10 dark:border-warmwhite/10 p-10">
-                    <i data-lucide="image" class="w-10 h-10 text-stone mx-auto mb-3"></i>
-                    <h4 class="font-editorial text-2xl text-carbon dark:text-warmwhite mb-1">Colección sin fotografías</h4>
-                    <p class="font-mono text-xs text-stone">El fotógrafo aún no ha subido fotos a este álbum.</p>
+                <div class="col-span-full text-center py-20 bg-white dark:bg-charcoal-surface border border-charcoal/10 dark:border-ivory/10 p-10">
+                    <i data-lucide="image" class="w-10 h-10 text-stone mx-auto mb-3 opacity-60"></i>
+                    <h4 class="font-editorial text-2xl text-charcoal dark:text-ivory mb-1">Colección sin fotografías</h4>
+                    <p class="text-xs text-stone">El fotógrafo aún no ha subido fotos a este álbum.</p>
                 </div>
             `;
             this.refreshIcons();
@@ -330,40 +551,51 @@ const app = {
         }
 
         grid.innerHTML = photos.map((photo, index) => {
-            const inCart = this.cart.some(item => item.id === photo.id);
+            const inCart = this.cart.some(item => String(item.id) === String(photo.id));
             return `
-                <div class="group relative bg-white dark:bg-card border border-carbon/10 dark:border-warmwhite/10 transition-all duration-300">
+                <div class="masonry-item group bg-white dark:bg-charcoal-surface">
                     
-                    <!-- Photo container with watermark -->
-                    <div class="relative aspect-[4/3] overflow-hidden bg-carbon/5 dark:bg-warmwhite/5 cursor-pointer" onclick="app.openLightbox(${index})">
+                    <!-- Checkbox visible de Selección Rápida -->
+                    <button type="button" 
+                            onclick="app.toggleCartPhoto('${photo.id}', event)" 
+                            class="photo-select-checkbox ${inCart ? 'selected' : ''}" 
+                            title="${inCart ? 'Quitar de mi selección' : 'Agregar a mi selección'}"
+                            aria-label="Seleccionar foto #${index + 1}">
+                        <i data-lucide="${inCart ? 'check' : 'plus'}"></i>
+                    </button>
+
+                    <!-- Contenedor de la foto con protección y lightbox -->
+                    <div class="relative overflow-hidden cursor-pointer" onclick="app.openLightbox(${index})">
                         <img src="${photo.url}" 
                              alt="${photo.alt_text || 'Fotografía de Nicolás Techeira'}" 
                              loading="lazy" 
-                             class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700">
+                             oncontextmenu="return false;" 
+                             ondragstart="return false;"
+                             class="w-full h-auto object-cover group-hover:scale-[1.03] transition-transform duration-700 protected-photo">
                         
-                        <!-- Watermark Overlay (Nicolas Techeira Fotografías) -->
+                        <!-- Marca de Agua Nicolas Techeira -->
                         <div class="picsel-watermark-overlay">
                             <span class="picsel-watermark-text">Nicolas Techeira</span>
                             <span class="picsel-watermark-subtext">Vista Previa · Oberá</span>
                         </div>
 
                         <!-- Zoom hint icon -->
-                        <div class="absolute top-3 left-3 w-8 h-8 bg-carbon/80 text-warmwhite flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                        <div class="absolute top-2.5 left-2.5 w-8 h-8 rounded-full bg-charcoal/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm border border-white/20">
+                            <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
                         </div>
                     </div>
 
-                    <!-- Photo Card Footer: + Agregar Button -->
-                    <div class="p-3.5 flex items-center justify-between border-t border-carbon/10 dark:border-warmwhite/10 bg-white dark:bg-card">
-                        <span class="font-mono text-xs text-stone">#${index + 1}</span>
-                        <button onclick="app.toggleCartPhoto(${photo.id}, event)" 
-                                class="text-xs font-mono py-1.5 px-3 transition-all flex items-center space-x-1.5 ${
+                    <!-- Pie de la tarjeta -->
+                    <div class="p-3 flex items-center justify-between border-t border-charcoal/10 dark:border-ivory/10 bg-white dark:bg-charcoal-surface text-xs">
+                        <span class="font-mono text-stone text-[11px]">#${index + 1}</span>
+                        <button onclick="app.toggleCartPhoto('${photo.id}', event)" 
+                                class="text-[11px] font-medium py-1 px-2.5 transition-all flex items-center space-x-1.5 ${
                                     inCart 
                                     ? 'btn-editorial-bronze' 
                                     : 'btn-editorial-secondary'
                                 }">
-                            <i data-lucide="${inCart ? 'check' : 'shopping-bag'}" class="w-3.5 h-3.5"></i>
-                            <span>${inCart ? 'Agregado' : 'Agregar'}</span>
+                            <i data-lucide="${inCart ? 'check' : 'shopping-bag'}" class="w-3 h-3"></i>
+                            <span>${inCart ? 'Seleccionada' : '+ Agregar'}</span>
                         </button>
                     </div>
 
@@ -371,11 +603,12 @@ const app = {
             `;
         }).join('');
 
+        this.updateAlbumSelectionBadge();
         this.refreshIcons();
     },
 
     // ============================================================
-    // LIGHTBOX VIEWER — FULLSCREEN CINEMATOGRAPHIC
+    // LIGHTBOX VIEWER — FULLSCREEN CINEMATOGRAPHIC CON ZOOM & SWIPE
     // ============================================================
     openLightbox(index) {
         const photos = this.currentFilteredPhotos || this.currentAlbumPhotos;
@@ -387,22 +620,96 @@ const app = {
         const modal = document.getElementById('lightboxModal');
         const img = document.getElementById('lightboxImg');
         const indexText = document.getElementById('lightboxIndexText');
+        const albumTitleText = document.getElementById('lightboxAlbumTitle');
         const cartBtn = document.getElementById('lightboxAddCartBtn');
+        const viewport = document.getElementById('lightboxViewport');
+
+        // Resetear estado de zoom
+        this.lightboxIsZoomed = false;
+        if (viewport) viewport.classList.remove('is-zoomed');
+        const zoomText = document.getElementById('lightboxZoomText');
+        const zoomIcon = document.getElementById('lightboxZoomIcon');
+        if (zoomText) zoomText.textContent = 'Zoom';
+        if (zoomIcon) zoomIcon.setAttribute('data-lucide', 'zoom-in');
 
         img.src = photo.url;
-        indexText.textContent = `[ FOTO ${index + 1} / ${photos.length} ]`;
+        if (albumTitleText) {
+            albumTitleText.textContent = (this.currentAlbum && this.currentAlbum.title) || 'Colección';
+        }
+        if (indexText) {
+            indexText.textContent = `[ FOTO ${index + 1} / ${photos.length} ]`;
+        }
 
-        const inCart = this.cart.some(item => item.id === photo.id);
-        cartBtn.innerHTML = `
-            <i data-lucide="${inCart ? 'check' : 'shopping-bag'}" class="w-3.5 h-3.5"></i>
-            <span>${inCart ? 'Quitar de Selección' : '+ Agregar a Selección'}</span>
-        `;
-        cartBtn.className = inCart 
-            ? 'btn-editorial-primary text-xs py-2 px-4'
-            : 'btn-editorial-bronze text-xs py-2 px-4';
+        const inCart = this.cart.some(item => String(item.id) === String(photo.id));
+        if (cartBtn) {
+            cartBtn.innerHTML = `
+                <i data-lucide="${inCart ? 'check' : 'shopping-bag'}" class="w-4 h-4"></i>
+                <span>${inCart ? 'Quitar de Selección' : '+ Agregar a Selección'}</span>
+            `;
+            cartBtn.className = inCart 
+                ? 'btn-editorial-primary text-xs py-2.5 px-6 shadow-xl w-full sm:w-auto flex items-center justify-center space-x-2'
+                : 'btn-editorial-bronze text-xs py-2.5 px-6 shadow-xl w-full sm:w-auto flex items-center justify-center space-x-2';
+        }
 
         modal.classList.remove('hidden');
+        this.initLightboxTouchEvents();
         this.refreshIcons();
+    },
+
+    toggleLightboxZoom(event) {
+        if (event) event.stopPropagation();
+        const viewport = document.getElementById('lightboxViewport');
+        const zoomText = document.getElementById('lightboxZoomText');
+        const zoomIcon = document.getElementById('lightboxZoomIcon');
+        
+        this.lightboxIsZoomed = !this.lightboxIsZoomed;
+        if (this.lightboxIsZoomed) {
+            if (viewport) viewport.classList.add('is-zoomed');
+            if (zoomText) zoomText.textContent = '1x';
+            if (zoomIcon) zoomIcon.setAttribute('data-lucide', 'zoom-out');
+        } else {
+            if (viewport) viewport.classList.remove('is-zoomed');
+            if (zoomText) zoomText.textContent = 'Zoom';
+            if (zoomIcon) zoomIcon.setAttribute('data-lucide', 'zoom-in');
+        }
+        this.refreshIcons();
+    },
+
+    initLightboxTouchEvents() {
+        const viewport = document.getElementById('lightboxViewport');
+        if (!viewport || viewport.dataset.touchInit === 'true') return;
+        viewport.dataset.touchInit = 'true';
+
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        viewport.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }
+        }, { passive: true });
+
+        viewport.addEventListener('touchend', (e) => {
+            if (e.changedTouches.length === 1) {
+                const touchEndX = e.changedTouches[0].clientX;
+                const touchEndY = e.changedTouches[0].clientY;
+                const diffX = touchEndX - touchStartX;
+                const diffY = touchEndY - touchStartY;
+
+                if (!this.lightboxIsZoomed) {
+                    if (Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY)) {
+                        if (diffX < 0) {
+                            this.nextLightboxPhoto();
+                        } else {
+                            this.prevLightboxPhoto();
+                        }
+                    } else if (diffY > 80 && Math.abs(diffY) > Math.abs(diffX)) {
+                        this.closeLightbox();
+                    }
+                }
+            }
+        }, { passive: true });
     },
 
     closeLightbox() {
@@ -436,6 +743,10 @@ const app = {
 
     handleKeyboard(e) {
         if (e.key === 'Escape') {
+            if (this.isIntroPlaying) {
+                this.skipIntro();
+                return;
+            }
             this.closeLightbox();
             this.closeSearchModal();
             this.closeCartModal();
@@ -449,18 +760,107 @@ const app = {
     },
 
     // ============================================================
-    // SHOPPING CART & CHECKOUT
+    // SHOPPING CART, PACK DISCOUNTS & MERCADO PAGO CHECKOUT
     // ============================================================
+    calculateCartTotals() {
+        const count = this.cart.length;
+        const subtotal = this.cart.reduce((sum, item) => sum + (Number(item.price) || 4000), 0);
+        
+        // Detección de pack completo (si selecciona todas las fotos de un álbum con al menos 4 fotos, o >= 20 fotos)
+        const isFullAlbum = Boolean(
+            this.currentAlbumPhotos && 
+            this.currentAlbumPhotos.length >= 4 && 
+            this.cart.length >= this.currentAlbumPhotos.length
+        );
+
+        let discountRate = 0;
+        let discountLabel = '';
+
+        if (count >= 20 || isFullAlbum) {
+            discountRate = 0.35;
+            discountLabel = 'Pack Colección Completa (35% OFF)';
+        } else if (count >= 10) {
+            discountRate = 0.25;
+            discountLabel = 'Pack 10 Fotos (25% OFF)';
+        } else if (count >= 5) {
+            discountRate = 0.15;
+            discountLabel = 'Pack 5 Recuerdos (15% OFF)';
+        }
+
+        const discountAmount = Math.round(subtotal * discountRate);
+        const total = Math.max(0, subtotal - discountAmount);
+
+        return {
+            count,
+            subtotal,
+            discountRate,
+            discountLabel,
+            discountAmount,
+            total,
+            isFullAlbum
+        };
+    },
+
+    animateFlyToCart(originEl, imgUrl) {
+        if (!originEl || !imgUrl) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        const targetEl = document.getElementById('headerCartBtn') || document.getElementById('floatingCartBar');
+        if (!targetEl) return;
+
+        const startRect = originEl.getBoundingClientRect();
+        const endRect = targetEl.getBoundingClientRect();
+
+        const ghost = document.createElement('img');
+        ghost.src = imgUrl;
+        ghost.className = 'fly-to-cart-ghost';
+        ghost.style.left = `${startRect.left}px`;
+        ghost.style.top = `${startRect.top}px`;
+        ghost.style.width = `${startRect.width}px`;
+        ghost.style.height = `${startRect.height}px`;
+        document.body.appendChild(ghost);
+
+        const targetX = endRect.left + endRect.width / 2 - startRect.width / 2;
+        const targetY = endRect.top + endRect.height / 2 - startRect.height / 2;
+
+        if (typeof gsap !== 'undefined') {
+            gsap.to(ghost, {
+                duration: 0.65,
+                x: targetX - startRect.left,
+                y: targetY - startRect.top,
+                scale: 0.15,
+                opacity: 0.3,
+                ease: 'power2.inOut',
+                onComplete: () => {
+                    ghost.remove();
+                    targetEl.classList.add('cart-pulse-active');
+                    setTimeout(() => targetEl.classList.remove('cart-pulse-active'), 500);
+                }
+            });
+        } else {
+            ghost.style.transition = 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+            requestAnimationFrame(() => {
+                ghost.style.transform = `translate(${targetX - startRect.left}px, ${targetY - startRect.top}px) scale(0.15)`;
+                ghost.style.opacity = '0.3';
+                setTimeout(() => {
+                    ghost.remove();
+                    targetEl.classList.add('cart-pulse-active');
+                    setTimeout(() => targetEl.classList.remove('cart-pulse-active'), 500);
+                }, 600);
+            });
+        }
+    },
+
     toggleCartPhoto(photoId, event) {
         if (event) event.stopPropagation();
 
-        const photo = this.currentAlbumPhotos.find(p => p.id === photoId);
+        const photo = this.currentAlbumPhotos.find(p => String(p.id) === String(photoId));
         if (!photo) return;
 
-        const existingIdx = this.cart.findIndex(item => item.id === photoId);
+        const existingIdx = this.cart.findIndex(item => String(item.id) === String(photoId));
         if (existingIdx >= 0) {
             this.cart.splice(existingIdx, 1);
-            this.showToast('Foto removida de la selección');
+            this.showToast('Foto removida de tu selección');
         } else {
             this.cart.push({
                 id: photo.id,
@@ -468,7 +868,24 @@ const app = {
                 albumTitle: this.currentAlbum ? this.currentAlbum.title : 'Evento',
                 price: this.currentAlbum ? this.currentAlbum.price : 4000
             });
-            this.showToast('Foto agregada a tu selección');
+
+            // Animación visual de vuelo al carrito
+            let originEl = null;
+            if (event && event.target) {
+                originEl = event.target.closest('.masonry-item')?.querySelector('img') || event.target;
+            } else {
+                originEl = document.getElementById('lightboxImg');
+            }
+            if (originEl) {
+                this.animateFlyToCart(originEl, photo.url);
+            }
+
+            const totals = this.calculateCartTotals();
+            if (totals.discountRate > 0) {
+                this.showToast(`¡Foto agregada! ${totals.discountLabel} activo`, 'success');
+            } else {
+                this.showToast('Foto agregada a tu selección');
+            }
         }
 
         this.updateCartUI();
@@ -478,10 +895,10 @@ const app = {
     },
 
     updateCartUI() {
-        const count = this.cart.length;
-        const total = this.cart.reduce((sum, item) => sum + (item.price || 4000), 0);
+        const totals = this.calculateCartTotals();
+        const count = totals.count;
 
-        // Header button
+        // Botón e insignia del Header
         const headerCartBtn = document.getElementById('headerCartBtn');
         const headerCartBadge = document.getElementById('headerCartBadge');
         if (headerCartBtn) {
@@ -493,7 +910,7 @@ const app = {
             }
         }
 
-        // Floating bar
+        // Barra flotante inferior
         const floatingBar = document.getElementById('floatingCartBar');
         const floatingCount = document.getElementById('floatingCartCount');
         const floatingTotal = document.getElementById('floatingCartTotal');
@@ -501,13 +918,75 @@ const app = {
         if (count > 0 && this.currentView === 'albumDetails') {
             floatingBar.classList.remove('hidden');
             floatingCount.textContent = count;
-            floatingTotal.textContent = `$ ${total.toLocaleString('es-AR')}`;
+            floatingTotal.textContent = `$ ${totals.total.toLocaleString('es-AR')}`;
         } else {
             floatingBar.classList.add('hidden');
         }
 
-        // Cart modal sum
-        document.getElementById('cartTotalSum').textContent = `$ ${total.toLocaleString('es-AR')}`;
+        // Subtotal, Descuentos y Total en Cart Modal
+        const subtotalEl = document.getElementById('cartSubtotalSum');
+        const totalEl = document.getElementById('cartTotalSum');
+        const discountRow = document.getElementById('cartDiscountRow');
+        const discountLabel = document.getElementById('cartDiscountLabel');
+        const discountAmount = document.getElementById('cartDiscountAmount');
+        const savingsBadge = document.getElementById('cartDiscountSavingsBadge');
+        const goalText = document.getElementById('cartDiscountGoalText');
+        const progressBar = document.getElementById('cartPackProgressBar');
+
+        if (subtotalEl) subtotalEl.textContent = `$ ${totals.subtotal.toLocaleString('es-AR')}`;
+        if (totalEl) totalEl.textContent = `$ ${totals.total.toLocaleString('es-AR')}`;
+
+        if (discountRow) {
+            if (totals.discountAmount > 0) {
+                discountRow.classList.remove('hidden');
+                if (discountLabel) discountLabel.textContent = totals.discountLabel;
+                if (discountAmount) discountAmount.textContent = `-$ ${totals.discountAmount.toLocaleString('es-AR')}`;
+                if (savingsBadge) {
+                    savingsBadge.classList.remove('hidden');
+                    savingsBadge.innerHTML = `<i data-lucide="sparkles" class="w-3 h-3"></i><span>${Math.round(totals.discountRate * 100)}% OFF</span>`;
+                }
+            } else {
+                discountRow.classList.add('hidden');
+                if (savingsBadge) savingsBadge.classList.add('hidden');
+            }
+        }
+
+        // Barra interactiva de progreso de packs
+        if (progressBar && goalText) {
+            let progressPercent = 0;
+            if (count === 0) {
+                progressPercent = 0;
+                goalText.textContent = '¡Sumá 5 fotos para activar 15% OFF!';
+            } else if (count < 5) {
+                progressPercent = (count / 5) * 33.3;
+                const diff = 5 - count;
+                goalText.textContent = `Sumá ${diff} foto${diff > 1 ? 's' : ''} más para activar 15% OFF`;
+            } else if (count < 10) {
+                progressPercent = 33.3 + ((count - 5) / 5) * 33.3;
+                const diff = 10 - count;
+                goalText.textContent = `¡15% OFF activo! Sumá ${diff} foto${diff > 1 ? 's' : ''} más para 25% OFF`;
+            } else if (count < 20) {
+                progressPercent = 66.6 + Math.min(1, (count - 10) / 10) * 33.4;
+                const diff = 20 - count;
+                goalText.textContent = `¡25% OFF activo! Sumá ${diff} más para Pack Completo (35% OFF)`;
+            } else {
+                progressPercent = 100;
+                goalText.textContent = '¡Máximo beneficio! 35% OFF aplicado en tu compra';
+            }
+            progressBar.style.width = `${progressPercent}%`;
+        }
+
+        // Píldoras indicadoras de nivel
+        const pill5 = document.getElementById('pillTier5');
+        const pill10 = document.getElementById('pillTier10');
+        const pillAll = document.getElementById('pillTierAll');
+
+        if (pill5) pill5.classList.toggle('active', count >= 5 && count < 10);
+        if (pill10) pill10.classList.toggle('active', count >= 10 && count < 20);
+        if (pillAll) pillAll.classList.toggle('active', count >= 20 || totals.isFullAlbum);
+
+        this.updateAlbumSelectionBadge();
+        this.refreshIcons();
     },
 
     openCartModal() {
@@ -525,12 +1004,12 @@ const app = {
                     <div class="flex items-center space-x-3">
                         <img src="${item.url}" class="w-12 h-12 object-cover border border-carbon/10 dark:border-warmwhite/10" alt="Miniatura">
                         <div>
-                            <p class="font-editorial text-base font-semibold text-carbon dark:text-warmwhite uppercase">${item.albumTitle}</p>
-                            <p class="font-mono text-[11px] text-stone">Descarga digital original</p>
+                            <p class="font-editorial text-base font-semibold text-charcoal dark:text-ivory uppercase">${item.albumTitle}</p>
+                            <p class="font-mono text-[11px] text-stone">Descarga original sin marca</p>
                         </div>
                     </div>
                     <div class="flex items-center space-x-3">
-                        <span class="font-mono text-xs font-bold text-carbon dark:text-warmwhite">$ ${(item.price || 4000).toLocaleString('es-AR')}</span>
+                        <span class="font-mono text-xs font-bold text-charcoal dark:text-ivory">$ ${(Number(item.price) || 4000).toLocaleString('es-AR')}</span>
                         <button onclick="app.removeCartItem(${index})" class="text-stone hover:text-red-500 p-1" title="Eliminar foto">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
@@ -540,6 +1019,7 @@ const app = {
         }
 
         document.getElementById('cartModal').classList.remove('hidden');
+        this.updateCartUI();
         this.refreshIcons();
     },
 
@@ -566,15 +1046,223 @@ const app = {
         }
     },
 
-    simulateCheckout() {
+    orderViaWhatsApp() {
         if (this.cart.length === 0) {
             this.showToast('La selección está vacía', 'error');
             return;
         }
 
-        const total = this.cart.reduce((sum, item) => sum + (item.price || 4000), 0);
+        const totals = this.calculateCartTotals();
+        const albumName = (this.cart[0] && this.cart[0].albumTitle) || (this.currentAlbum && this.currentAlbum.title) || 'Colección';
+
+        let message = `¡Hola Nicolás! Quiero encargar ${totals.count} fotografía(s) de la colección "${albumName}".\n\n`;
+        message += `📋 Detalle del pedido:\n`;
+        message += `• Cantidad: ${totals.count} fotos\n`;
+        message += `• Subtotal: $ ${totals.subtotal.toLocaleString('es-AR')} ARS\n`;
+        if (totals.discountAmount > 0) {
+            message += `• Descuento: ${totals.discountLabel} (-$ ${totals.discountAmount.toLocaleString('es-AR')} ARS)\n`;
+        }
+        message += `• TOTAL A ABONAR: $ ${totals.total.toLocaleString('es-AR')} ARS\n\n`;
+        message += `¿Cómo coordinamos el pago y el envío de los archivos originales en máxima calidad? ¡Muchas gracias!`;
+
+        const waUrl = `https://wa.me/5493755284134?text=${encodeURIComponent(message)}`;
+        window.open(waUrl, '_blank');
         this.closeCartModal();
-        alert(`Conectando con la pasarela de pagos...\n\nFotógrafo: Nicolas Techeira\nTotal a abonar: $ ${total.toLocaleString('es-AR')} ARS\nCantidad de fotos: ${this.cart.length}\n\nSerás redirigido para completar la transacción de manera segura.`);
+        this.showToast('Abriendo WhatsApp para coordinar el pedido...');
+    },
+
+    async handleMercadoPagoCheckout() {
+        if (this.cart.length === 0) {
+            this.showToast('La selección está vacía', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('btnMpCheckout');
+        const originalText = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>Conectando...</span>`;
+        }
+
+        try {
+            const isFullAlbum = Boolean(
+                this.currentAlbumPhotos && 
+                this.cart.length >= this.currentAlbumPhotos.length
+            );
+
+            const orderData = {
+                items: this.cart,
+                albumId: this.currentAlbum ? this.currentAlbum.id : null,
+                customerName: 'Cliente Nicolas Techeira',
+                customerEmail: 'cliente@estudio.com',
+                isFullAlbum
+            };
+
+            const result = await window.picselDB.createCheckoutPreference(orderData);
+
+            this.closeCartModal();
+
+            // Si Mercado Pago devolvió URL de pago, abrirla
+            if (result && result.initPoint) {
+                window.open(result.initPoint, '_blank');
+            }
+
+            // Mostrar modal de confirmación con acceso inmediato a descargas
+            this.openOrderSuccessModal(result);
+
+            // Vaciar carrito tras la orden
+            this.cart = [];
+            this.updateCartUI();
+            if (this.currentAlbum) {
+                this.renderAlbumPhotos(this.currentFilteredPhotos || this.currentAlbumPhotos);
+            }
+        } catch (err) {
+            console.error('Error al procesar checkout:', err);
+            this.showToast('Error al conectar con la pasarela de pagos', 'error');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+    },
+
+    openOrderSuccessModal(orderData) {
+        const modal = document.getElementById('orderSuccessModal');
+        const numberEl = document.getElementById('orderSuccessNumber');
+        const listEl = document.getElementById('orderDownloadsList');
+        if (!modal) return;
+
+        this.lastOrderData = orderData;
+        if (numberEl) numberEl.textContent = orderData.orderNumber || 'NT-2026';
+
+        if (listEl) {
+            const items = orderData.items || [];
+            listEl.innerHTML = items.map((item, idx) => `
+                <div class="py-2.5 flex items-center justify-between text-xs">
+                    <div class="flex items-center space-x-3">
+                        <img src="${item.url}" class="w-10 h-10 object-cover border border-carbon/10 rounded-sm" alt="Miniatura">
+                        <div>
+                            <span class="font-medium text-charcoal dark:text-ivory block uppercase text-[11px]">Fotografía #${idx + 1}</span>
+                            <span class="text-stone text-[10px]">JPEG Original · Alta Definición</span>
+                        </div>
+                    </div>
+                    <button type="button" 
+                            onclick="app.downloadSinglePhoto('${orderData.token}', '${item.id}', '${item.url}')" 
+                            class="btn-editorial-secondary py-1 px-3 text-xs flex items-center space-x-1">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span>Descargar</span>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        modal.classList.remove('hidden');
+        this.refreshIcons();
+    },
+
+    closeOrderSuccessModal() {
+        const modal = document.getElementById('orderSuccessModal');
+        if (modal) modal.classList.add('hidden');
+    },
+
+    downloadSinglePhoto(token, photoId, url) {
+        if (token && !token.startsWith('nt-')) {
+            window.open(`/api/downloads/${token}/${photoId}`, '_blank');
+            return;
+        }
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `NicolasTecheira-Foto-${photoId || Date.now()}.jpg`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        this.showToast('Descarga iniciada');
+    },
+
+    downloadAllPurchased() {
+        if (!this.lastOrderData || !this.lastOrderData.items) return;
+        const items = this.lastOrderData.items;
+        const token = this.lastOrderData.token;
+
+        this.showToast(`Iniciando descarga de ${items.length} fotos...`);
+        items.forEach((item, index) => {
+            setTimeout(() => {
+                this.downloadSinglePhoto(token, item.id, item.url);
+            }, index * 400);
+        });
+    },
+
+    // ============================================================
+    // 3D TILT EFFECT & PARALLAX MICRO-INTERACTIONS
+    // ============================================================
+    initTiltCards() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) return;
+
+        const cards = document.querySelectorAll('[data-tilt]');
+        cards.forEach(card => {
+            if (card.dataset.tiltInitialized === 'true') return;
+            card.dataset.tiltInitialized = 'true';
+
+            const glare = card.querySelector('.tilt-card-glare');
+
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width - 0.5;
+                const y = (e.clientY - rect.top) / rect.height - 0.5;
+
+                const rotateX = -y * 12;
+                const rotateY = x * 12;
+
+                card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.02, 1.02, 1.02)`;
+
+                if (glare) {
+                    const glareX = ((e.clientX - rect.left) / rect.width) * 100;
+                    const glareY = ((e.clientY - rect.top) / rect.height) * 100;
+                    glare.style.setProperty('--glare-x', `${glareX.toFixed(1)}%`);
+                    glare.style.setProperty('--glare-y', `${glareY.toFixed(1)}%`);
+                }
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+            });
+        });
+    },
+
+    initHeroParallax() {
+        const heroSection = document.getElementById('heroSection');
+        const heroImg = document.getElementById('heroFeaturedImg');
+        if (!heroSection || !heroImg) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        heroSection.addEventListener('mousemove', (e) => {
+            const rect = heroSection.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+
+            if (typeof gsap !== 'undefined') {
+                gsap.to(heroImg, {
+                    duration: 0.8,
+                    x: x * 16,
+                    y: y * 16,
+                    ease: 'power1.out'
+                });
+            }
+        });
+
+        heroSection.addEventListener('mouseleave', () => {
+            if (typeof gsap !== 'undefined') {
+                gsap.to(heroImg, {
+                    duration: 0.8,
+                    x: 0,
+                    y: 0,
+                    ease: 'power1.out'
+                });
+            }
+        });
     },
 
     // ============================================================
@@ -866,14 +1554,14 @@ const app = {
                     <!-- Right: Action Buttons -->
                     <div class="flex items-center space-x-2 self-end md:self-auto font-mono text-xs">
                         <!-- Toggle publish/unpublish -->
-                        <button onclick="app.handleTogglePublish(${album.id})" 
+                        <button onclick="app.handleTogglePublish('${album.id}')" 
                                 class="btn-editorial-secondary py-1 px-3 text-xs" 
                                 title="${isPublished ? 'Despublicar álbum' : 'Publicar álbum'}">
                             ${isPublished ? 'Despublicar' : 'Publicar'}
                         </button>
 
                         <!-- Edit album -->
-                        <button onclick="app.openAlbumFormModal(${album.id})" class="btn-editorial-secondary py-1 px-3 text-xs flex items-center space-x-1" title="Editar datos y fotos">
+                        <button onclick="app.openAlbumFormModal('${album.id}')" class="btn-editorial-secondary py-1 px-3 text-xs flex items-center space-x-1" title="Editar datos y fotos">
                             <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                             <span>Editar</span>
                         </button>
@@ -884,7 +1572,7 @@ const app = {
                         </button>
 
                         <!-- Delete album -->
-                        <button onclick="app.handleDeleteAlbum(${album.id})" class="p-2 border border-red-500/20 text-red-500 hover:bg-red-500/10 transition-colors" title="Eliminar álbum">
+                        <button onclick="app.handleDeleteAlbum('${album.id}')" class="p-2 border border-red-500/20 text-red-500 hover:bg-red-500/10 transition-colors" title="Eliminar álbum">
                             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                         </button>
                     </div>
@@ -937,7 +1625,7 @@ const app = {
         if (albumId) {
             // Edit mode
             modalTitle.textContent = 'Editar Álbum';
-            const album = await window.picselDB.getById('albums', Number(albumId));
+            const album = await window.picselDB.getAlbumById(albumId);
             if (!album) return;
 
             document.getElementById('formAlbumId').value = album.id;
@@ -986,7 +1674,7 @@ const app = {
         if (input.files && input.files[0]) {
             this.compressImageFile(input.files[0], (dataUrl) => {
                 document.getElementById('formCoverPreview').src = dataUrl;
-            });
+            }, true);
         }
     },
 
@@ -1005,15 +1693,15 @@ const app = {
                     processed++;
                     if (processed === files.length) {
                         this.renderFormPhotosThumbnails();
-                        this.showToast(`${files.length} fotos procesadas`);
+                        this.showToast(`${files.length} fotos procesadas con marca de agua`);
                     }
-                });
+                }, false);
             });
         }
     },
 
-    // Client-side image compression using canvas
-    compressImageFile(file, callback) {
+    // Client-side image compression & pixel-embedded watermark using canvas
+    compressImageFile(file, callback, isCover = false) {
         const reader = new FileReader();
         reader.onload = (e) => {
             const img = new Image();
@@ -1038,12 +1726,35 @@ const app = {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
 
+                // Grabar marca de agua en píxeles para previews de galería
+                if (!isCover) {
+                    this.applyCanvasWatermark(ctx, width, height);
+                }
+
                 const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
                 callback(dataUrl);
             };
             img.src = e.target.result;
         };
         reader.readAsDataURL(file);
+    },
+
+    applyCanvasWatermark(ctx, width, height) {
+        ctx.save();
+        ctx.translate(width / 2, height / 2);
+        ctx.rotate(-Math.PI / 6);
+        ctx.font = `600 ${Math.max(18, Math.round(width * 0.040))}px 'Space Grotesk', -apple-system, sans-serif`;
+        ctx.fillStyle = 'rgba(232, 238, 240, 0.42)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(14, 17, 20, 0.6)';
+        ctx.shadowBlur = 8;
+        ctx.fillText('NICOLAS TECHEIRA · VISTA PREVIA', 0, 0);
+
+        ctx.font = `500 ${Math.max(10, Math.round(width * 0.016))}px 'Inter', sans-serif`;
+        ctx.fillStyle = 'rgba(45, 212, 191, 0.45)';
+        ctx.fillText('OBERÁ, MISIONES · COBERTURA OFICIAL', 0, Math.round(width * 0.038));
+        ctx.restore();
     },
 
     renderFormPhotosThumbnails() {
@@ -1119,7 +1830,17 @@ const app = {
                 this.showToast('Álbum creado exitosamente');
             }
 
-            // Sync photos
+            // Sync photos (detección de fotos eliminadas y alta de nuevas)
+            if (albumId) {
+                const existingPhotos = await window.picselDB.getPhotosByAlbum(albumId);
+                const currentIds = new Set(this.formPhotosTemp.filter(p => p.isExisting).map(p => String(p.id)));
+                for (const oldPhoto of existingPhotos) {
+                    if (!currentIds.has(String(oldPhoto.id))) {
+                        await window.picselDB.deletePhoto(oldPhoto.id);
+                    }
+                }
+            }
+
             for (let i = 0; i < this.formPhotosTemp.length; i++) {
                 const item = this.formPhotosTemp[i];
                 if (!item.isExisting) {

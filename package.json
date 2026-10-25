@@ -1,0 +1,26 @@
+{
+  "name": "nicolas-techeira-fotografias",
+  "version": "1.0.0",
+  "description": "Plataforma fotográfica editorial y CMS de Nicolas Techeira con persistencia en MariaDB",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "db:init": "node scripts/init-db.js",
+    "db:seed": "node scripts/seed-db.js"
+  },
+  "keywords": [
+    "fotografia",
+    "portfolio",
+    "mariadb",
+    "mysql",
+    "hostinger",
+    "cms"
+  ],
+  "author": "Nicolas Techeira",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "mysql2": "^3.12.0"
+  }
+}

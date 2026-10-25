@@ -1,0 +1,18 @@
+# Entorno y Secretos
+.env
+.env.local
+.env.*.local
+frontend/.env
+
+# Node y dependencias
+node_modules/
+npm-debug.log*
+
+# Supabase temporales
+supabase/.temp/
+
+# Sistema y cache
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc

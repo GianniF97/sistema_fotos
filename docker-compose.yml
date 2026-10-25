@@ -1,0 +1,26 @@
+services:
+  mariadb:
+    image: mariadb:10.11
+    container_name: nicolas_techeira_db
+    restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_master_pass_2026}
+      MARIADB_DATABASE: ${DB_NAME:-nicolas_techeira}
+      MARIADB_USER: ${DB_USER:-nt_user}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-nt_local_secure_pass_2026}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mariadb_data:
+    driver: local

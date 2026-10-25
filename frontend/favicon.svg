@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+    <rect width="64" height="64" rx="14" fill="#0E1114"/>
+    <!-- NT Monogram with Aperture in Teal & Graphite -->
+    <g transform="translate(8, 8) scale(0.32)">
+        <!-- N left stem -->
+        <rect x="18" y="10" width="28" height="128" fill="#E8EEF0"/>
+        <!-- T horizontal bar -->
+        <rect x="74" y="10" width="76" height="24" fill="#E8EEF0"/>
+        <!-- T vertical stem -->
+        <rect x="98" y="34" width="28" height="104" fill="#E8EEF0"/>
+        <!-- N diagonal segment connecting to aperture -->
+        <polygon points="46,10 74,10 74,38 46,38" fill="#E8EEF0"/>
+        <polygon points="46,110 74,80 74,138 46,138" fill="#E8EEF0"/>
+        <!-- Aperture Circle Outer Ring in Teal Accent -->
+        <circle cx="68" cy="80" r="38" fill="#14181C" stroke="#2DD4BF" stroke-width="3.5"/>
+        <!-- 6 Aperture Blades in Graphite Light -->
+        <polygon points="68,44 94,54 82,78 60,66" fill="#E8EEF0" stroke="#0E1114" stroke-width="2"/>
+        <polygon points="94,54 104,80 82,92 76,70" fill="#E8EEF0" stroke="#0E1114" stroke-width="2"/>
+        <polygon points="104,80 88,106 66,94 78,78" fill="#E8EEF0" stroke="#0E1114" stroke-width="2"/>
+        <polygon points="88,106 58,114 54,90 74,86" fill="#E8EEF0" stroke="#0E1114" stroke-width="2"/>
+        <polygon points="58,114 36,94 52,76 66,88" fill="#E8EEF0" stroke="#0E1114" stroke-width="2"/>
+        <polygon points="36,94 44,58 68,68 56,86" fill="#E8EEF0" stroke="#0E1114" stroke-width="2"/>
+        <!-- Center Aperture Opening in Teal -->
+        <polygon points="68,68 76,70 78,78 74,86 66,88 56,86" fill="#2DD4BF"/>
+    </g>
+</svg>
