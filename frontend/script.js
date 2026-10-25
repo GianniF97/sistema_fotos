@@ -213,8 +213,33 @@ const app = {
     // ============================================================
     async handleRouting() {
         const hash = window.location.hash || '#/';
-        
-        // Hide all major views
+
+        // 1. Manejo de anclas a secciones internas del portafolio
+        if (hash === '#comoFuncionaSection' || hash === '#albumsSection' || hash === '#heroSection') {
+            const wasOtherView = this.currentView !== 'publicPortfolio';
+            
+            document.getElementById('viewAlbumDetails').classList.add('hidden');
+            document.getElementById('viewAdminLogin').classList.add('hidden');
+            document.getElementById('viewAdminDashboard').classList.add('hidden');
+            document.getElementById('viewPublicPortfolio').classList.remove('hidden');
+
+            this.currentView = 'publicPortfolio';
+            document.title = 'Nicolas Techeira Fotografías';
+
+            if (wasOtherView || !this.cachedAlbums || this.cachedAlbums.length === 0) {
+                await this.loadPublicAlbums();
+            }
+
+            const targetId = hash.replace('#', '');
+            setTimeout(() => {
+                this.smoothScrollToId(targetId);
+            }, wasOtherView ? 150 : 50);
+
+            this.refreshIcons();
+            return;
+        }
+
+        // 2. Rutas principales de la aplicación
         document.getElementById('viewPublicPortfolio').classList.add('hidden');
         document.getElementById('viewAlbumDetails').classList.add('hidden');
         document.getElementById('viewAdminLogin').classList.add('hidden');
@@ -226,6 +251,7 @@ const app = {
             document.title = 'Nicolas Techeira Fotografías';
             document.getElementById('viewPublicPortfolio').classList.remove('hidden');
             await this.loadPublicAlbums();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         } 
         // Route: Album details (#/album/slug-name)
         else if (hash.startsWith('#/album/')) {
@@ -233,6 +259,7 @@ const app = {
             this.currentView = 'albumDetails';
             document.getElementById('viewAlbumDetails').classList.remove('hidden');
             await this.loadAlbumDetails(slug);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         } 
         // Route: Admin Login (#/admin/login)
         else if (hash === '#/admin/login') {
@@ -244,6 +271,7 @@ const app = {
             this.currentView = 'adminLogin';
             document.getElementById('viewAdminLogin').classList.remove('hidden');
             await this.prepareAdminLoginForm();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         } 
         // Route: Admin Dashboard CMS (#/admin/dashboard)
         else if (hash === '#/admin/dashboard') {
@@ -258,13 +286,48 @@ const app = {
             document.getElementById('viewAdminDashboard').classList.remove('hidden');
             document.getElementById('adminGreeting').textContent = `Sesión: ${session.name} (${session.email})`;
             await this.loadAdminDashboard();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         } 
         else {
             window.location.hash = '#/';
         }
 
-        window.scrollTo({ top: 0, behavior: 'smooth' });
         this.refreshIcons();
+    },
+
+    navigateToSection(sectionId, event) {
+        if (event) {
+            event.preventDefault();
+        }
+
+        // Si estamos en otra vista (ej: detalle de álbum o admin), cambiar primero a la vista pública
+        if (this.currentView !== 'publicPortfolio') {
+            window.location.hash = sectionId === 'top' ? '#/' : `#${sectionId}`;
+            return;
+        }
+
+        // Si ya estamos en la vista pública, hacer scroll suave directo
+        this.smoothScrollToId(sectionId);
+    },
+
+    smoothScrollToId(sectionId) {
+        if (!sectionId || sectionId === 'top') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
+        const el = document.getElementById(sectionId);
+        if (el) {
+            const header = document.getElementById('mainHeader');
+            const headerHeight = header ? header.offsetHeight : 80;
+            const elementPosition = el.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerHeight - 16;
+
+            window.scrollTo({
+                top: Math.max(0, offsetPosition),
+                behavior: 'smooth'
+            });
+        }
     },
 
     goHome() {

@@ -125,7 +125,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-8 h-20 sm:h-24 flex items-center justify-between">
             
             <!-- Identidad de Marca Oficial: Logo Real de Nicolas Techeira -->
-            <a href="#/" class="brand-logo-container group" title="Nicolas Techeira Fotografías">
+            <a href="#/" onclick="app.navigateToSection('top', event)" class="brand-logo-container group" title="Nicolas Techeira Fotografías">
                 <!-- Logotipo NT con Diafragma Fotográfico Real -->
                 <img src="logo-mark-dark.png" alt="Nicolas Techeira Fotografías" class="brand-logo-mark logo-light-theme-visible">
                 <img src="logo-mark-light.png" alt="Nicolas Techeira Fotografías" class="brand-logo-mark logo-dark-theme-visible">
@@ -142,13 +142,13 @@
 
             <!-- Navegación Central Editorial -->
             <nav class="hidden md:flex items-center space-x-8" aria-label="Navegación principal">
-                <a href="#/" class="text-xs uppercase tracking-widest font-medium text-[#14181C] dark:text-[#E8EEF0] hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors">
+                <a href="#albumsSection" onclick="app.navigateToSection('albumsSection', event)" class="text-xs uppercase tracking-widest font-medium text-[#14181C] dark:text-[#E8EEF0] hover:text-[#0F766E] dark:hover:text-[#2DD4BF] transition-colors cursor-pointer">
                     Colecciones
                 </a>
-                <a href="#comoFuncionaSection" class="text-xs uppercase tracking-widest font-medium text-stone hover:text-[#14181C] dark:hover:text-[#E8EEF0] transition-colors">
+                <a href="#comoFuncionaSection" onclick="app.navigateToSection('comoFuncionaSection', event)" class="text-xs uppercase tracking-widest font-medium text-stone hover:text-[#14181C] dark:hover:text-[#E8EEF0] transition-colors cursor-pointer">
                     ¿Cómo Funciona?
                 </a>
-                <a href="#albumsSection" class="text-xs uppercase tracking-widest font-medium text-stone hover:text-[#14181C] dark:hover:text-[#E8EEF0] transition-colors">
+                <a href="#albumsSection" onclick="app.navigateToSection('albumsSection', event)" class="text-xs uppercase tracking-widest font-medium text-stone hover:text-[#14181C] dark:hover:text-[#E8EEF0] transition-colors cursor-pointer">
                     Catálogo
                 </a>
                 <a href="https://instagram.com/nicolastecheira" target="_blank" rel="noopener noreferrer" class="text-xs uppercase tracking-widest font-medium text-stone hover:text-[#14181C] dark:hover:text-[#E8EEF0] transition-colors flex items-center space-x-1.5">
@@ -181,6 +181,7 @@
 
             </div>
 
+        </div>
     </header>
 
     <!-- ========================================== -->
