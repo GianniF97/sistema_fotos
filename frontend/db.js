@@ -807,10 +807,10 @@ class NicolasTecheiraDB {
         throw new Error('Servicio de pagos no disponible: el servidor no está conectado.');
     }
 
-    async getOrderByToken(token) {
+    async getOrder(identifier) {
         if (this.mariadbConnected) {
             try {
-                const res = await fetch(`/api/orders/${encodeURIComponent(token)}`);
+                const res = await fetch(`/api/orders/${encodeURIComponent(identifier)}`);
                 if (res.ok) {
                     const json = await res.json();
                     return json.order;
@@ -820,6 +820,10 @@ class NicolasTecheiraDB {
             }
         }
         return null;
+    }
+
+    async getOrderByToken(token) {
+        return this.getOrder(token);
     }
 }
 

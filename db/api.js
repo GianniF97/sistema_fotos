@@ -681,12 +681,12 @@ async function handleApiRequest(req, res) {
                                 email: cleanEmail
                             },
                             back_urls: {
-                                success: `${req.headers.origin || 'http://localhost:3000'}/#/order/success?token=${token}`,
-                                pending: `${req.headers.origin || 'http://localhost:3000'}/#/order/pending?token=${token}`,
-                                failure: `${req.headers.origin || 'http://localhost:3000'}/#/order/failure?token=${token}`
+                                success: `${req.headers.origin || 'http://localhost:3000'}/#/order/success?order=${orderNumber}`,
+                                pending: `${req.headers.origin || 'http://localhost:3000'}/#/order/pending?order=${orderNumber}`,
+                                failure: `${req.headers.origin || 'http://localhost:3000'}/#/order/failure?order=${orderNumber}`
                             },
                             auto_return: 'approved',
-                            external_reference: token,
+                            external_reference: orderNumber,
                             statement_descriptor: 'NICOLAS TECHEIRA'
                         })
                     });
@@ -712,7 +712,6 @@ async function handleApiRequest(req, res) {
                 data: {
                     orderId,
                     orderNumber,
-                    token,
                     count,
                     subtotal,
                     discountAmount,
@@ -731,17 +730,22 @@ async function handleApiRequest(req, res) {
         }
     }
 
-    // 14. Consultar Orden por Token
-    const orderMatch = pathPart.match(/^\/api\/orders\/([a-f0-9]{32,64})$/i);
+    // 14. Consultar Orden por Número de Orden o Token Público
+    const orderMatch = pathPart.match(/^\/api\/orders\/([a-zA-Z0-9_-]{8,64})$/i);
     if (orderMatch && method === 'GET') {
         try {
-            const token = orderMatch[1];
-            const [orders] = await pool.query('SELECT * FROM orders WHERE token = ?', [token]);
+            const identifier = orderMatch[1];
+            const [orders] = await pool.query(
+                'SELECT * FROM orders WHERE order_number = ? OR token = ?',
+                [identifier, identifier]
+            );
             if (orders.length === 0) {
-                sendJson(res, 404, { ok: false, error: 'Orden no encontrada o token inválido.' });
+                sendJson(res, 404, { ok: false, error: 'Orden no encontrada.' });
                 return true;
             }
             const order = orders[0];
+            const isApproved = order.payment_status === 'approved';
+
             const [items] = await pool.query(
                 `SELECT oi.*, p.url, p.alt_text, p.filename 
                  FROM order_items oi
@@ -749,10 +753,24 @@ async function handleApiRequest(req, res) {
                  WHERE oi.order_id = ?`,
                 [order.id]
             );
+
             sendJson(res, 200, {
                 ok: true,
                 order: {
-                    ...order,
+                    id: order.id,
+                    orderNumber: order.order_number,
+                    customerName: order.customer_name,
+                    customerEmail: order.customer_email,
+                    customerPhone: order.customer_phone,
+                    subtotal: order.subtotal,
+                    discountAmount: order.discount_amount,
+                    discountLabel: order.discount_label,
+                    totalAmount: order.total_amount,
+                    paymentMethod: order.payment_method,
+                    paymentStatus: order.payment_status,
+                    createdAt: order.created_at,
+                    // Token de descarga privado: SOLO se entrega cuando el pago figura aprobado
+                    token: isApproved ? order.token : null,
                     items
                 }
             });
@@ -871,11 +889,12 @@ async function handleApiRequest(req, res) {
                 return true;
             }
 
-            // Extraer identificador del recurso desde query o payload JSON
-            const payload = await parseBody(req);
-            const dataId = query.get('data.id') || query.get('id') || payload.data?.id || payload.id;
+            // Extraer identificador del recurso exclusivamente desde query params de la URL
+            // (según documentación oficial de Mercado Pago para armado del manifest x-signature)
+            const rawDataId = query.get('data.id') || query.get('id');
+            const dataId = rawDataId ? String(rawDataId).trim().toLowerCase() : null;
             if (!dataId) {
-                sendJson(res, 200, { ok: true, message: 'Notificación recibida sin ID de recurso de pago.' });
+                sendJson(res, 200, { ok: true, message: 'Notificación recibida sin data.id en parámetros de consulta de la URL.' });
                 return true;
             }
 
@@ -931,15 +950,18 @@ async function handleApiRequest(req, res) {
                 return true;
             }
 
-            // b. external_reference debe vincularse al token de nuestra orden
-            const orderToken = paymentData.external_reference;
-            if (!orderToken) {
+            // b. external_reference debe vincularse al identificador público de nuestra orden (order_number)
+            const externalRef = paymentData.external_reference;
+            if (!externalRef) {
                 sendJson(res, 422, { ok: false, error: 'El pago en Mercado Pago no contiene external_reference.' });
                 return true;
             }
 
-            // c. Localizar la orden en la base de datos
-            const [orders] = await pool.query('SELECT * FROM orders WHERE token = ?', [orderToken]);
+            // c. Localizar la orden en la base de datos por order_number (o token por compatibilidad)
+            const [orders] = await pool.query(
+                'SELECT * FROM orders WHERE order_number = ? OR token = ?',
+                [externalRef, externalRef]
+            );
             if (orders.length === 0) {
                 sendJson(res, 404, { ok: false, error: 'Orden no encontrada para el external_reference especificado.' });
                 return true;
@@ -966,12 +988,12 @@ async function handleApiRequest(req, res) {
 
             // 4. Actualización transaccional e idempotente en base de datos
             const [updateResult] = await pool.query(
-                "UPDATE orders SET payment_status = 'approved', updated_at = NOW() WHERE token = ? AND payment_status = 'pending'",
-                [orderToken]
+                "UPDATE orders SET payment_status = 'approved', updated_at = NOW() WHERE id = ? AND payment_status = 'pending'",
+                [order.id]
             );
 
             if (updateResult.affectedRows === 1) {
-                console.log(`[MercadoPago Webhook] Orden ${order.order_number} (${orderToken}) aprobada exitosamente.`);
+                console.log(`[MercadoPago Webhook] Orden ${order.order_number} (ID: ${order.id}) aprobada exitosamente.`);
             } else {
                 console.log(`[MercadoPago Webhook] Orden ${order.order_number} ya se encontraba aprobada (evento idempotente).`);
             }

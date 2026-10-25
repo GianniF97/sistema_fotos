@@ -107,26 +107,24 @@ test.before(async () => {
     pool.query = async (sql, params = []) => {
         const lowerSql = sql.toLowerCase();
 
-        // SELECT orders WHERE token = ?
-        if (lowerSql.includes('from orders') && lowerSql.includes('where token = ?')) {
-            const token = params[0];
-            const order = mockDb.orders.find(o => o.token === token);
+        // SELECT orders WHERE order_number = ? OR token = ? (o token = ?)
+        if (lowerSql.includes('from orders')) {
+            const ident = params[0];
+            const order = mockDb.orders.find(o => o.order_number === ident || o.token === ident);
             return [order ? [order] : []];
         }
 
         // UPDATE orders SET payment_status = 'approved'
-        if (lowerSql.includes('update orders set payment_status = \'approved\'')) {
-            // Verificar si es transaccional/idempotente con WHERE token = ? AND payment_status = 'pending'
-            let token = params.find(p => typeof p === 'string' && (p.startsWith('valid_order') || p.startsWith('other_order')));
-            if (!token && params.length > 0) token = params[0];
-
-            const order = mockDb.orders.find(o => o.token === token);
+        if (lowerSql.includes("update orders set payment_status = 'approved'")) {
+            // WHERE id = ? AND payment_status = 'pending'
+            let targetId = params[0];
+            const order = mockDb.orders.find(o => o.id === targetId || o.token === targetId || o.order_number === targetId);
             if (!order) {
                 return [{ affectedRows: 0 }];
             }
 
             // Solo actualizar si está pendiente (idempotencia)
-            if (lowerSql.includes('payment_status = \'pending\'') && order.payment_status !== 'pending') {
+            if (lowerSql.includes("payment_status = 'pending'") && order.payment_status !== 'pending') {
                 return [{ affectedRows: 0 }];
             }
 
@@ -134,16 +132,26 @@ test.before(async () => {
             return [{ affectedRows: 1 }];
         }
 
-        // SELECT items / photos para descargas
-        if (lowerSql.includes('from order_items') && lowerSql.includes('photos')) {
+        // SELECT items / photos para órdenes o descargas
+        if (lowerSql.includes('from order_items')) {
             const orderId = params[0];
             const photoId = params[1];
-            const item = mockDb.orderItems.find(oi => oi.order_id === orderId && oi.photo_id === photoId);
-            if (item) {
-                const photo = mockDb.photos.find(p => p.id === photoId);
-                return [[{ ...item, url: photo.url, filename: photo.filename }]];
+            if (photoId !== undefined) {
+                const item = mockDb.orderItems.find(oi => oi.order_id === orderId && oi.photo_id === photoId);
+                if (item) {
+                    const photo = mockDb.photos.find(p => p.id === photoId);
+                    return [[{ ...item, url: photo.url, filename: photo.filename }]];
+                }
+                return [[]];
+            } else {
+                const items = mockDb.orderItems
+                    .filter(oi => oi.order_id === orderId)
+                    .map(item => {
+                        const photo = mockDb.photos.find(p => p.id === item.photo_id);
+                        return { ...item, url: photo ? photo.url : '', filename: photo ? photo.filename : '' };
+                    });
+                return [items];
             }
-            return [[]];
         }
 
         return [[]];
@@ -268,7 +276,7 @@ test('SEC-01 Webhook: Rechaza si el monto pagado en MP es menor al total de la o
         status_detail: 'accredited',
         currency_id: 'ARS',
         transaction_amount: 1000.00,
-        external_reference: mockDb.orders[0].token
+        external_reference: mockDb.orders[0].order_number
     };
 
     const res = await fetch(`${baseUrl}/api/checkout/webhook?data.id=${dataId}&type=payment`, {
@@ -303,7 +311,7 @@ test('SEC-01 Webhook: Rechaza si la moneda en MP es diferente de ARS', async () 
         status_detail: 'accredited',
         currency_id: 'USD',
         transaction_amount: 5000.00,
-        external_reference: mockDb.orders[0].token
+        external_reference: mockDb.orders[0].order_number
     };
 
     const res = await fetch(`${baseUrl}/api/checkout/webhook?data.id=${dataId}&type=payment`, {
@@ -338,7 +346,7 @@ test('SEC-01 Webhook: No aprueba la orden si el estado del pago en MP no es appr
         status_detail: 'cc_rejected_other_reason',
         currency_id: 'ARS',
         transaction_amount: 5000.00,
-        external_reference: mockDb.orders[0].token
+        external_reference: mockDb.orders[0].order_number
     };
 
     const res = await fetch(`${baseUrl}/api/checkout/webhook?data.id=${dataId}&type=payment`, {
@@ -372,7 +380,7 @@ test('SEC-01 Webhook: Rechaza si el external_reference de MP no existe o no coin
         status_detail: 'accredited',
         currency_id: 'ARS',
         transaction_amount: 5000.00,
-        external_reference: 'token_falso_que_no_existe_en_bd'
+        external_reference: 'NT-999999-999'
     };
 
     const res = await fetch(`${baseUrl}/api/checkout/webhook?data.id=${dataId}&type=payment`, {
@@ -391,7 +399,7 @@ test('SEC-01 Webhook: Rechaza si el external_reference de MP no existe o no coin
 });
 
 // =========================================================================
-// CASO 8: Evento legítimo y repetición idempotente
+// CASO 8: Evento legítimo y repetición idempotente con order_number como external_reference
 // =========================================================================
 test('SEC-01 Webhook: Aprueba orden válidamente y es idempotente ante eventos repetidos', async () => {
     const dataId = '99908';
@@ -408,7 +416,7 @@ test('SEC-01 Webhook: Aprueba orden válidamente y es idempotente ante eventos r
         status_detail: 'accredited',
         currency_id: 'ARS',
         transaction_amount: 5000.00,
-        external_reference: mockDb.orders[0].token
+        external_reference: mockDb.orders[0].order_number
     };
 
     // 1. Primera notificación: debe aprobar la orden
@@ -474,4 +482,47 @@ test('SEC-01 Descargas: Bloquea descarga de fotos originales si el pago no está
     mockDb.orders[0].payment_status = 'approved';
     const approvedRes = await fetch(`${baseUrl}/api/downloads/${orderToken}/101`, { redirect: 'manual' });
     assert.ok(approvedRes.status === 200 || approvedRes.status === 302, `Descarga aprobada debe permitir acceso, respondió ${approvedRes.status}`);
+});
+
+// =========================================================================
+// CASO 11: Falla cerrada si MERCADOPAGO_WEBHOOK_SECRET no está configurado
+// =========================================================================
+test('SEC-01 Webhook: Falla cerrada - rechaza con 500 toda petición si el secreto no está configurado', async () => {
+    const origSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
+    delete process.env.MERCADOPAGO_WEBHOOK_SECRET;
+
+    try {
+        const res = await fetch(`${baseUrl}/api/checkout/webhook?data.id=99911&type=payment`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ type: 'payment' })
+        });
+
+        assert.equal(res.status, 500, 'Debe devolver 500 rechazando la petición cuando falta el secret');
+        const json = await res.json();
+        assert.equal(json.ok, false);
+    } finally {
+        process.env.MERCADOPAGO_WEBHOOK_SECRET = origSecret;
+    }
+});
+
+// =========================================================================
+// CASO 12: Ocultamiento del token de descarga hasta que la orden esté aprobada
+// =========================================================================
+test('SEC-01 Órdenes: Oculta el token de descarga en pending y solo lo revela en approved', async () => {
+    // 1. Estado pending: token debe ser estrictamente null
+    mockDb.orders[0].payment_status = 'pending';
+    const resPending = await fetch(`${baseUrl}/api/orders/${mockDb.orders[0].order_number}`);
+    assert.equal(resPending.status, 200);
+    const bodyPending = await resPending.json();
+    assert.equal(bodyPending.order.token, null, 'El token secreto debe ser null mientras el pago no esté aprobado');
+
+    // 2. Estado approved: token de descarga legítimo es revelado al cliente
+    mockDb.orders[0].payment_status = 'approved';
+    const resApproved = await fetch(`${baseUrl}/api/orders/${mockDb.orders[0].order_number}`);
+    assert.equal(resApproved.status, 200);
+    const bodyApproved = await resApproved.json();
+    assert.equal(bodyApproved.order.token, mockDb.orders[0].token, 'El token secreto debe entregarse al cliente cuando la orden esté aprobada');
 });

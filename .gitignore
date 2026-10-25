@@ -3,6 +3,7 @@
 .env.local
 .env.*.local
 frontend/.env
+auditoria/
 
 # Node y dependencias
 node_modules/

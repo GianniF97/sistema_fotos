@@ -11,6 +11,13 @@ const path = require('path');
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'frontend');
 
+// Control de seguridad crítico en arranque: rechazar modo simulado en producción
+if (process.env.NODE_ENV === 'production' && process.env.ALLOW_SIMULATED_PAYMENTS === 'true') {
+    console.error('\n[FATAL SECURITY ERROR] ALLOW_SIMULATED_PAYMENTS no puede estar habilitado cuando NODE_ENV=production.');
+    console.error('El servidor se niega a arrancar para prevenir bypass o simulación de pagos en producción.\n');
+    process.exit(1);
+}
+
 let handleApiRequest = null;
 let checkConnection = null;
 try {

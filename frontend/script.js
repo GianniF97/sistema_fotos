@@ -303,6 +303,24 @@ const app = {
             await this.loadAdminDashboard();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } 
+        // Route: Retorno de pago de Mercado Pago (#/order/success o #/order/pending)
+        else if (hash.startsWith('#/order/success') || hash.startsWith('#/order/pending')) {
+            this.currentView = 'orderReturn';
+            document.title = 'Estado de tu Orden — Nicolas Techeira Fotografías';
+            document.getElementById('viewPublicPortfolio').classList.remove('hidden');
+
+            // Extraer identificador de orden desde hash o parámetros de URL
+            const hashParts = hash.split('?');
+            const searchParams = new URLSearchParams(hashParts[1] || window.location.search);
+            const orderNumber = searchParams.get('order') || searchParams.get('external_reference') || searchParams.get('orderNumber');
+
+            if (orderNumber) {
+                this.pollOrderStatus(orderNumber);
+            } else {
+                this.showToast('No se especificó número de orden para consultar', 'error');
+                window.location.hash = '#/';
+            }
+        }
         else {
             window.location.hash = '#/';
         }
@@ -1225,19 +1243,23 @@ const app = {
 
             this.closeCartModal();
 
-            // Si Mercado Pago devolvió URL de pago, abrirla
-            if (result && result.initPoint) {
-                window.open(result.initPoint, '_blank');
-            }
-
-            // Mostrar modal de confirmación con acceso inmediato a descargas
-            this.openOrderSuccessModal(result);
-
             // Vaciar carrito tras la orden
             this.cart = [];
             this.updateCartUI();
             if (this.currentAlbum) {
                 this.renderAlbumPhotos(this.currentFilteredPhotos || this.currentAlbumPhotos);
+            }
+
+            // Si Mercado Pago devolvió URL de pago, abrir pasarela
+            if (result && result.initPoint) {
+                window.open(result.initPoint, '_blank');
+            }
+
+            // Redirigir a vista de confirmación que monitorea el estado del pago
+            if (result && result.orderNumber) {
+                window.location.hash = `#/order/success?order=${encodeURIComponent(result.orderNumber)}`;
+            } else {
+                this.showToast('Orden creada exitosamente');
             }
         } catch (err) {
             console.error('Error al procesar checkout:', err);
@@ -1250,17 +1272,129 @@ const app = {
         }
     },
 
-    openOrderSuccessModal(orderData) {
+    async pollOrderStatus(orderNumber) {
         const modal = document.getElementById('orderSuccessModal');
         const numberEl = document.getElementById('orderSuccessNumber');
+        const titleEl = document.getElementById('orderStatusTitle');
+        const badgeEl = document.getElementById('orderStatusBadge');
+        const subtitleEl = document.getElementById('orderStatusSubtitle');
+        const helpTextEl = document.getElementById('orderStatusHelpText');
         const listEl = document.getElementById('orderDownloadsList');
-        if (!modal) return;
+        const downloadAllBtn = document.getElementById('orderDownloadAllBtn');
+        const iconContainer = document.getElementById('orderStatusIcon');
 
-        this.lastOrderData = orderData;
-        if (numberEl) numberEl.textContent = orderData.orderNumber || 'NT-2026';
+        if (!modal) return;
+        modal.classList.remove('hidden');
+
+        if (numberEl) numberEl.textContent = orderNumber;
+
+        // Estado inicial de espera
+        if (titleEl) titleEl.textContent = 'Procesando tu pago…';
+        if (badgeEl) {
+            badgeEl.textContent = 'Validando Transacción';
+            badgeEl.className = 'text-xs text-amber-500 uppercase tracking-widest font-semibold block mb-1';
+        }
+        if (subtitleEl) subtitleEl.textContent = 'Esperando confirmación segura';
+        if (iconContainer) {
+            iconContainer.className = 'w-14 h-14 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-3 border border-amber-500/20';
+            iconContainer.innerHTML = '<i data-lucide="loader-2" class="w-8 h-8 animate-spin text-amber-500"></i>';
+        }
+        if (helpTextEl) {
+            helpTextEl.textContent = 'Estamos verificando la acreditación con Mercado Pago. Esto suele demorar unos instantes…';
+        }
+        if (listEl) {
+            listEl.innerHTML = `
+                <div class="py-8 text-center text-stone text-xs flex flex-col items-center justify-center space-y-2">
+                    <i data-lucide="shield-check" class="w-6 h-6 text-bronze animate-pulse"></i>
+                    <span>Verificando autenticidad del pago con la pasarela...</span>
+                </div>
+            `;
+        }
+        if (downloadAllBtn) {
+            downloadAllBtn.disabled = true;
+            downloadAllBtn.classList.add('opacity-50', 'pointer-events-none');
+        }
+        this.refreshIcons();
+
+        // Polling con límite de tiempo: 15 intentos cada 2.5 segundos (~37s)
+        const maxAttempts = 15;
+        const intervalMs = 2500;
+        let attempts = 0;
+
+        const poll = async () => {
+            attempts++;
+            try {
+                const order = await window.picselDB.getOrder(orderNumber);
+                if (order && order.paymentStatus === 'approved') {
+                    // ¡Aprobado y confirmado por webhook!
+                    this.renderApprovedOrderModal(order);
+                    return;
+                }
+            } catch (err) {
+                console.warn('[Polling Order] Intento fallido:', err);
+            }
+
+            if (attempts < maxAttempts) {
+                setTimeout(poll, intervalMs);
+            } else {
+                // Tiempo límite alcanzado sin confirmación
+                if (titleEl) titleEl.textContent = 'Pago en Proceso de Acreditación';
+                if (badgeEl) {
+                    badgeEl.textContent = 'Pendiente de Acreditación';
+                    badgeEl.className = 'text-xs text-stone uppercase tracking-widest font-semibold block mb-1';
+                }
+                if (subtitleEl) subtitleEl.textContent = 'Pendiente de confirmación bancaria';
+                if (helpTextEl) {
+                    helpTextEl.innerHTML = `Tu pago aún está siendo procesado por Mercado Pago o la entidad emisora. Guarda tu número de orden: <strong class="text-charcoal dark:text-ivory">${orderNumber}</strong>. En cuanto se confirme la acreditación, podrás descargar tus fotos aquí o reintentando la consulta.`;
+                }
+                if (listEl) {
+                    listEl.innerHTML = `
+                        <div class="py-6 text-center text-xs text-stone space-y-2">
+                            <i data-lucide="clock" class="w-8 h-8 text-stone mx-auto"></i>
+                            <p>Esperando confirmación bancaria.</p>
+                            <button type="button" onclick="app.pollOrderStatus('${orderNumber}')" class="btn-editorial-secondary py-1.5 px-4 text-xs mt-2">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 inline mr-1"></i> Reintentar consulta de pago
+                            </button>
+                        </div>
+                    `;
+                }
+                this.refreshIcons();
+            }
+        };
+
+        poll();
+    },
+
+    renderApprovedOrderModal(order) {
+        const modal = document.getElementById('orderSuccessModal');
+        const numberEl = document.getElementById('orderSuccessNumber');
+        const titleEl = document.getElementById('orderStatusTitle');
+        const badgeEl = document.getElementById('orderStatusBadge');
+        const subtitleEl = document.getElementById('orderStatusSubtitle');
+        const helpTextEl = document.getElementById('orderStatusHelpText');
+        const listEl = document.getElementById('orderDownloadsList');
+        const downloadAllBtn = document.getElementById('orderDownloadAllBtn');
+        const iconContainer = document.getElementById('orderStatusIcon');
+
+        this.lastOrderData = order;
+
+        if (numberEl) numberEl.textContent = order.orderNumber || order.order_number;
+        if (titleEl) titleEl.textContent = '¡Tus fotografías están listas!';
+        if (badgeEl) {
+            badgeEl.textContent = 'Pago Aprobado y Confirmado';
+            badgeEl.className = 'text-xs text-emerald-500 uppercase tracking-widest font-semibold block mb-1';
+        }
+        if (subtitleEl) subtitleEl.textContent = 'Acceso directo y seguro';
+        if (iconContainer) {
+            iconContainer.className = 'w-14 h-14 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-3 border border-emerald-500/20';
+            iconContainer.innerHTML = '<i data-lucide="check-circle" class="w-8 h-8"></i>';
+        }
+        if (helpTextEl) {
+            helpTextEl.textContent = 'A continuación podés descargar tus archivos en máxima resolución original sin compresión ni marcas de agua.';
+        }
 
         if (listEl) {
-            const items = orderData.items || [];
+            const items = order.items || [];
             listEl.innerHTML = items.map((item, idx) => `
                 <div class="py-2.5 flex items-center justify-between text-xs">
                     <div class="flex items-center space-x-3">
@@ -1271,7 +1405,7 @@ const app = {
                         </div>
                     </div>
                     <button type="button" 
-                            onclick="app.downloadSinglePhoto('${orderData.token}', '${item.id}', '${item.url}')" 
+                            onclick="app.downloadSinglePhoto('${order.token}', '${item.photo_id || item.photoId || item.id}', '${item.url}')" 
                             class="btn-editorial-secondary py-1 px-3 text-xs flex items-center space-x-1">
                         <i data-lucide="download" class="w-3.5 h-3.5"></i>
                         <span>Descargar</span>
@@ -1280,8 +1414,21 @@ const app = {
             `).join('');
         }
 
-        modal.classList.remove('hidden');
+        if (downloadAllBtn) {
+            downloadAllBtn.disabled = false;
+            downloadAllBtn.classList.remove('opacity-50', 'pointer-events-none');
+        }
+
         this.refreshIcons();
+    },
+
+    openOrderSuccessModal(orderData) {
+        if (!orderData) return;
+        if (orderData.paymentStatus === 'approved' || orderData.payment_status === 'approved') {
+            this.renderApprovedOrderModal(orderData);
+        } else if (orderData.orderNumber || orderData.order_number) {
+            this.pollOrderStatus(orderData.orderNumber || orderData.order_number);
+        }
     },
 
     closeOrderSuccessModal() {
@@ -1290,7 +1437,7 @@ const app = {
     },
 
     downloadSinglePhoto(token, photoId, url) {
-        if (token && !token.startsWith('nt-')) {
+        if (token) {
             window.open(`/api/downloads/${token}/${photoId}`, '_blank');
             return;
         }
@@ -1312,7 +1459,7 @@ const app = {
         this.showToast(`Iniciando descarga de ${items.length} fotos...`);
         items.forEach((item, index) => {
             setTimeout(() => {
-                this.downloadSinglePhoto(token, item.id, item.url);
+                this.downloadSinglePhoto(token, item.photo_id || item.photoId || item.id, item.url);
             }, index * 400);
         });
     },

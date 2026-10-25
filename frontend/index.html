@@ -941,18 +941,18 @@
             </button>
 
             <div class="text-center pb-5 border-b border-charcoal/10 dark:border-ivory/10">
-                <div class="w-14 h-14 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-3 border border-emerald-500/20">
+                <div id="orderStatusIcon" class="w-14 h-14 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-3 border border-emerald-500/20">
                     <i data-lucide="check-circle" class="w-8 h-8"></i>
                 </div>
-                <span class="text-xs text-bronze uppercase tracking-widest font-semibold block mb-1">Orden Confirmada</span>
-                <h3 class="font-editorial text-3xl font-medium text-charcoal dark:text-ivory">¡Tus fotografías están listas!</h3>
+                <span id="orderStatusBadge" class="text-xs text-bronze uppercase tracking-widest font-semibold block mb-1">Orden Confirmada</span>
+                <h3 id="orderStatusTitle" class="font-editorial text-3xl font-medium text-charcoal dark:text-ivory">¡Tus fotografías están listas!</h3>
                 <p class="text-xs text-stone mt-1">
-                    Orden <span id="orderSuccessNumber" class="font-mono font-bold text-charcoal dark:text-ivory">NT-000000</span> · Acceso directo y seguro
+                    Orden <span id="orderSuccessNumber" class="font-mono font-bold text-charcoal dark:text-ivory">NT-000000</span> · <span id="orderStatusSubtitle">Acceso directo y seguro</span>
                 </p>
             </div>
 
             <div class="py-4 space-y-3">
-                <p class="text-xs text-stone leading-relaxed">
+                <p id="orderStatusHelpText" class="text-xs text-stone leading-relaxed">
                     A continuación podés descargar tus archivos en máxima resolución original sin compresión ni marcas de agua.
                 </p>
 
@@ -963,7 +963,7 @@
             </div>
 
             <div class="pt-4 border-t border-charcoal/10 dark:border-ivory/10 flex flex-col sm:flex-row gap-2">
-                <button onclick="app.downloadAllPurchased()" class="btn-editorial-bronze flex-1 text-xs py-3 flex items-center justify-center space-x-2">
+                <button id="orderDownloadAllBtn" onclick="app.downloadAllPurchased()" class="btn-editorial-bronze flex-1 text-xs py-3 flex items-center justify-center space-x-2">
                     <i data-lucide="download-cloud" class="w-4 h-4"></i>
                     <span>Descargar Todo el Lote</span>
                 </button>

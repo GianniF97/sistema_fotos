@@ -92,8 +92,8 @@ El proyecto tiene una base estética, legal y de experiencia de usuario de prime
 | ID | Severidad | Área | Archivo y Línea | Descripción Resumida | Dificultad | Esfuerzo |
 | :---: | :---: | :---: | :---: | :--- | :---: | :---: |
 | **SEC-01** | **Crítica** | Pagos y Carrito | `db/api.js:824-980` | Webhook de MP: lógica HMAC e idempotencia verificadas (Parcial: simulación) | Trivial | Medio |
-| **SEC-02** | **Crítica** | Control de Acceso | `db/api.js:259,311,372,385,424` | Endpoints de administración (ABM álbumes y fotos) completamente abiertos sin auth | Trivial | Bajo |
-| **SEC-03** | **Crítica** | Pagos y Carrito | `db/api.js:441-450` | El total a pagar se calcula confiando en el precio enviado por el navegador | Baja | Bajo |
+| **SEC-02** | **Crítica** | Control de Acceso | `db/api.js:259,311,372,385,424` | **Corregido** (commits `9eb4aff` y `6e24777`, 2026-10-25) — Middleware `requireAdminAuth` en rutas mutativas | Trivial | Bajo |
+| **SEC-03** | **Crítica** | Pagos y Carrito | `db/api.js:441-450` | **Corregido** (commits `6009321` y `2564ec9`, 2026-10-25) — Precios y descuentos calculados exclusivamente en servidor | Baja | Bajo |
 | **SEC-04** | **Crítica** | Protección de Fotos | `script.js:691-702, style.css:344` | Marca de agua por capa CSS: la imagen original de alta resolución viaja al cliente | Trivial | Alto |
 | **SEC-05** | **Alta** | Secretos y Config | `Git: 204c98c, c5d068d, seed.sql` | Contraseñas y tokens commiteados en historial de Git y contraseña default pública | Baja | Medio |
 | **SEC-06** | **Alta** | Inyecciones | `script.js:437,559,675,1125,1645` | Uso inseguro de `innerHTML` concatenando datos de usuario sin sanitizar (XSS) | Media | Medio |
@@ -231,6 +231,11 @@ if (['POST', 'PUT', 'DELETE'].includes(method) && pathPart.startsWith('/api/albu
 }
 ```
 
+#### Estado de Remediación:
+* **Estado:** **Corregido** (commits `9eb4aff` y `6e24777`, 25 de Octubre de 2026).
+* **Solución implementada:** Middleware `requireAdminAuth` aplicado estrictamente en todos los métodos mutativos del backend (`POST /api/albums`, `PUT /api/albums/:id`, `DELETE /api/albums/:id`, `POST /api/photos`, `DELETE /api/photos/:id`). Se validó además que solo usuarios con rol `admin` puedan alterar el catálogo, se bloqueó la exposición de borradores (`drafts`) y fotos no publicadas a usuarios anónimos, y se sanitizaron las respuestas de `/api/health` y `/api/db/status`.
+* **Suite de pruebas automatizadas:** `tests/sec-02-auth-admin.test.js` (15/15 pruebas pasando).
+
 ---
 
 ### SEC-03 — Manipulación de Precios del Carrito en el Cliente (Client-side Price Tampering)
@@ -273,6 +278,11 @@ const [dbPhotos] = await pool.query(
 // El precio se calcula con a.price proveniente de la base de datos
 const subtotal = dbPhotos.reduce((sum, photo) => sum + Number(photo.price), 0);
 ```
+
+#### Estado de Remediación:
+* **Estado:** **Corregido** (commits `6009321` y `2564ec9`, 25 de Octubre de 2026).
+* **Solución implementada:** Centralización autoritativa del motor de precios en `db/pricing.js`. El backend rechaza o ignora cualquier precio enviado por el cliente y consulta exclusivamente los precios oficiales de los álbumes en la base de datos. Detección segura de álbum completo en servidor (requiere comprar todas las fotos de un único álbum publicado). Escalas centralizadas de descuento (5+ fotos: 15%, 10+ fotos: 25%, 20+ fotos o álbum completo: 35%). Validación estricta de orden y fotos.
+* **Suite de pruebas automatizadas:** `tests/sec-03-pricing.test.js` (9/9 pruebas pasando).
 
 ---
 
@@ -408,8 +418,12 @@ graph TD
         C1[Integración de Cloudflare Turnstile en formularios]
         C2[Políticas estrictas de Content-Security-Policy CSP]
         C3[Hashes de integridad SRI en scripts CDN]
+        C4[Revocación automática de descargas y tokens ante reembolsos o contracargos]
     end
 ```
+
+> **Nota para Fase 3 (Revocación Post-Pago):**  
+> Cuando el webhook reciba actualizaciones de estado a `refunded`, `charged_back` o `disputed`, el sistema debe invalidar inmediatamente el token de la orden (`token = NULL` o `payment_status = 'refunded'`) para revocar el acceso a futuras descargas del cliente y registrar el incidente en logs de auditoría.
 
 ---
 
