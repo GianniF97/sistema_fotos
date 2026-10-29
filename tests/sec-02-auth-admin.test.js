@@ -11,6 +11,7 @@ let baseUrl;
 
 // Base de datos simulada en memoria para aislar 100% las pruebas de la base real
 const originalPoolQuery = pool.query;
+const originalPoolGetConnection = pool.getConnection;
 const mockDb = {
     albums: [
         { id: 1, slug: 'album-publico', title: 'Álbum Público', status: 'published', price: 4000, sort_order: 1 },
@@ -26,6 +27,10 @@ const mockDb = {
 test.before(async () => {
     // Interceptar cualquier query para asegurar que JAMÁS toque una base de datos real
     mockDb.executedQueries = [];
+    pool.getConnection = async () => ({
+        ping: async () => {},
+        release: () => {}
+    });
     pool.query = async (sql, params = []) => {
         mockDb.executedQueries.push({ sql, params });
         const lowerSql = sql.toLowerCase();
@@ -81,7 +86,11 @@ test.before(async () => {
 
 test.after(() => {
     pool.query = originalPoolQuery;
-    if (server) server.close();
+    pool.getConnection = originalPoolGetConnection;
+    if (server) {
+        server.closeAllConnections?.();
+        server.close();
+    }
 });
 
 test('SEC-02: Endpoints administrativos mutativos deben rechazar peticiones sin token con 401', async (t) => {
