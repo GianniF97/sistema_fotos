@@ -1,10 +1,21 @@
 -- =============================================================================
 -- MIGRACIÓN 004: ALMACENAMIENTO DE ORIGINALES, MARCAS DE AGUA Y VIGENCIA (FASE 2)
--- Compatible con MariaDB 10.4+, MySQL 8.0+ y entornos de producción (Hostinger)
+-- Motor objetivo actual: MariaDB 10.11 (desarrollo local Docker y Hostinger).
+-- NOTA DE COMPATIBILIDAD SQL:
+--   * `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` y `CREATE INDEX IF NOT EXISTS`
+--     son sintaxis específica de MariaDB (no compatible con MySQL 8.0 ni SQLite).
+--     Refs: https://mariadb.com/kb/en/alter-table/
+--           https://mariadb.com/kb/en/create-index/
+--   * Al migrar a Cloudflare D1 (SQLite), se deberá escribir una migración aparte
+--     adaptada al dialecto SQLite (sin `IF NOT EXISTS` en `ADD COLUMN`, sin `ENUM`,
+--     sin `UNSIGNED`, sin `AFTER` y con una sentencia `ALTER TABLE` por columna).
+--     Refs: https://www.sqlite.org/lang_altertable.html
+--           https://developers.cloudflare.com/d1/sql-api/
 -- REGLA DEFENSIVA: Estrictamente incremental (sin sentencias DROP).
 -- =============================================================================
 
-USE `nicolas_techeira`;
+-- Nota: No se incluye `USE <db>` fijo para respetar `DB_NAME` configurado en `.env`
+-- (por ejemplo en Hostinger donde el nombre de BD lleva prefijo de cuenta).
 
 -- -----------------------------------------------------------------------------
 -- 1. TABLA photos: Columnas para aislamiento de originales y metadatos
@@ -13,6 +24,7 @@ USE `nicolas_techeira`;
 -- thumbnail_url: Ruta pública de la miniatura con marca de agua
 -- original_path: Identificador o ruta interna relativa en almacenamiento privado
 -- storage_driver: Proveedor de almacenamiento ('local' en disco o 'r2' en Cloudflare)
+-- mime_type: Tipo MIME validado por magic bytes ('image/jpeg', 'image/png', 'image/webp')
 -- file_size_bytes: Tamaño del archivo original en bytes
 -- width / height: Dimensiones en píxeles del archivo original
 -- is_demo: Bandera booleana (1 = foto de muestra/demo, 0 = foto real vendible)
@@ -22,6 +34,7 @@ ALTER TABLE `photos`
   ADD COLUMN IF NOT EXISTS `thumbnail_url` VARCHAR(500) NULL AFTER `preview_url`,
   ADD COLUMN IF NOT EXISTS `original_path` VARCHAR(500) NULL AFTER `thumbnail_url`,
   ADD COLUMN IF NOT EXISTS `storage_driver` ENUM('local', 'r2') NOT NULL DEFAULT 'local' AFTER `original_path`,
+  ADD COLUMN IF NOT EXISTS `mime_type` VARCHAR(100) NOT NULL DEFAULT 'image/jpeg' AFTER `storage_driver`,
   ADD COLUMN IF NOT EXISTS `file_size_bytes` BIGINT UNSIGNED DEFAULT 0 AFTER `file_size`,
   ADD COLUMN IF NOT EXISTS `width` INT UNSIGNED NULL AFTER `file_size_bytes`,
   ADD COLUMN IF NOT EXISTS `height` INT UNSIGNED NULL AFTER `width`,

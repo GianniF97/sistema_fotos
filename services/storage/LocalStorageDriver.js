@@ -16,6 +16,11 @@ class LocalStorageDriver extends StorageDriver {
      */
     constructor(options = {}) {
         super();
+        if (process.env.NODE_ENV === 'test' && !options.baseDir) {
+            throw new Error(
+                'LocalStorageDriver requiere especificar options.baseDir (carpeta temporal mkdtemp) cuando NODE_ENV=test para proteger storage/originals real'
+            );
+        }
         const configuredDir = options.baseDir || process.env.STORAGE_DIR || 'storage/originals';
         this.baseDir = path.isAbsolute(configuredDir)
             ? path.resolve(configuredDir)
@@ -73,12 +78,33 @@ class LocalStorageDriver extends StorageDriver {
 
     /**
      * Guarda el archivo original de forma íntegra e inmutable (byte a byte).
+     * El nombre de archivo lo genera exclusivamente el servidor (UUID v4 aleatorio)
+     * y nunca puede provenir del cliente.
      * @param {Buffer|import('stream').Readable} input
-     * @param {string} relativePath
-     * @param {Object} [options]
+     * @param {Object|string} [optionsOrKey={}] - Opciones ({ mimeType, extension, prefix }) o clave UUID v4 del servidor
+     * @param {Object} [maybeOptions={}]
      * @returns {Promise<{ path: string, sizeBytes: number, driver: string }>}
      */
-    async saveOriginal(input, relativePath, options = {}) {
+    async saveOriginal(input, optionsOrKey = {}, maybeOptions = {}) {
+        let relativePath;
+
+        if (typeof optionsOrKey === 'string') {
+            // 1. Validar Path Traversal primero para bloquear escapes de directorio
+            this._resolveAndValidatePath(optionsOrKey);
+
+            // 2. Exigir que la clave sea un UUID v4 generado por el servidor (rechazar nombres de cliente)
+            if (!StorageDriver.isValidServerOriginalKey(optionsOrKey)) {
+                throw new Error(
+                    'Nombre de archivo rechazado: los originales deben usar un UUID v4 aleatorio generado por el servidor y nunca un nombre provisto por el cliente'
+                );
+            }
+            relativePath = optionsOrKey;
+        } else if (optionsOrKey && typeof optionsOrKey === 'object') {
+            relativePath = StorageDriver.generateOriginalFilename(optionsOrKey);
+        } else {
+            throw new Error('Opciones inválidas para saveOriginal: se requiere mimeType o clave UUID generada por el servidor');
+        }
+
         const targetPath = this._resolveAndValidatePath(relativePath);
         const targetDir = path.dirname(targetPath);
 

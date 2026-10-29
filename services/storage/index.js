@@ -20,6 +20,13 @@ function getStorageDriver(driverName = process.env.STORAGE_DRIVER || 'local', op
         case 'local':
             return new LocalStorageDriver(options);
         case 'r2':
+            if (process.env.NODE_ENV === 'production') {
+                const err = new Error(
+                    'R2StorageDriver no implementado: no puede seleccionarse cuando NODE_ENV=production'
+                );
+                err.code = 'ERR_NOT_IMPLEMENTED';
+                throw err;
+            }
             return new R2StorageDriver(options);
         default:
             throw new Error(`Driver de almacenamiento no soportado o desconocido: '${driverName}'`);
