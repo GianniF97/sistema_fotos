@@ -16,15 +16,40 @@ class LocalStorageDriver extends StorageDriver {
      */
     constructor(options = {}) {
         super();
-        if (process.env.NODE_ENV === 'test' && !options.baseDir) {
-            throw new Error(
+        const hasExplicitBaseDir = Boolean(
+            options && typeof options.baseDir === 'string' && options.baseDir.trim().length > 0
+        );
+        if (process.env.NODE_ENV === 'test' && !hasExplicitBaseDir) {
+            const err = new Error(
                 'LocalStorageDriver requiere especificar options.baseDir (carpeta temporal mkdtemp) cuando NODE_ENV=test para proteger storage/originals real'
             );
+            err.code = 'ERR_TEST_STORAGE_REQUIRES_BASEDIR';
+            throw err;
         }
-        const configuredDir = options.baseDir || process.env.STORAGE_DIR || 'storage/originals';
+        const configuredDir = hasExplicitBaseDir
+            ? options.baseDir.trim()
+            : (process.env.STORAGE_DIR || 'storage/originals');
         this.baseDir = path.isAbsolute(configuredDir)
             ? path.resolve(configuredDir)
             : path.resolve(process.cwd(), configuredDir);
+
+        if (process.env.NODE_ENV === 'test') {
+            const projectRoot = path.resolve(__dirname, '..', '..');
+            const realOriginals = path.resolve(projectRoot, 'storage', 'originals');
+            const realUploads = path.resolve(projectRoot, 'frontend', 'uploads');
+            const touchesRealDir =
+                this.baseDir === realOriginals ||
+                this.baseDir.startsWith(realOriginals + path.sep) ||
+                this.baseDir === realUploads ||
+                this.baseDir.startsWith(realUploads + path.sep);
+            if (touchesRealDir) {
+                const err = new Error(
+                    'LocalStorageDriver no puede apuntar a storage/originals ni frontend/uploads reales cuando NODE_ENV=test'
+                );
+                err.code = 'ERR_TEST_STORAGE_FORBIDDEN_REAL_DIR';
+                throw err;
+            }
+        }
 
         // Asegurar que el directorio base exista al inicializar
         if (!fs.existsSync(this.baseDir)) {

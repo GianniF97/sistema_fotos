@@ -1,3 +1,5 @@
+process.env.NODE_ENV = 'test';
+
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -12,6 +14,52 @@ const {
     R2StorageDriver,
     getStorageDriver
 } = require('../services/storage');
+
+const REAL_PROTECTED_DIRS = Object.freeze({
+    originals: path.join(__dirname, '..', 'storage', 'originals'),
+    previews: path.join(__dirname, '..', 'frontend', 'uploads', 'previews'),
+    thumbs: path.join(__dirname, '..', 'frontend', 'uploads', 'thumbs')
+});
+
+function listDirectoryTreeSnapshot(rootDir) {
+    if (!fs.existsSync(rootDir)) {
+        return { exists: false, entries: [] };
+    }
+
+    const entries = [];
+    function walk(currentDir) {
+        const dirItems = fs.readdirSync(currentDir, { withFileTypes: true });
+        for (const item of dirItems) {
+            const fullPath = path.join(currentDir, item.name);
+            const relPath = path.relative(rootDir, fullPath).split(path.sep).join('/');
+            const stat = fs.statSync(fullPath);
+            entries.push({
+                relPath,
+                isDirectory: item.isDirectory(),
+                size: item.isDirectory() ? 0 : stat.size,
+                mtimeMs: Math.trunc(stat.mtimeMs)
+            });
+            if (item.isDirectory()) {
+                walk(fullPath);
+            }
+        }
+    }
+
+    walk(rootDir);
+    entries.sort((a, b) => a.relPath.localeCompare(b.relPath));
+    return { exists: true, entries };
+}
+
+function captureProtectedDirsSnapshot() {
+    return {
+        originals: listDirectoryTreeSnapshot(REAL_PROTECTED_DIRS.originals),
+        previews: listDirectoryTreeSnapshot(REAL_PROTECTED_DIRS.previews),
+        thumbs: listDirectoryTreeSnapshot(REAL_PROTECTED_DIRS.thumbs)
+    };
+}
+
+// Captura inicial antes de ejecutar cualquier prueba de la suite
+const initialProtectedDirsSnapshot = captureProtectedDirsSnapshot();
 
 test('StorageDriver: Clase base abstracta', async (t) => {
     const base = new StorageDriver();
@@ -264,7 +312,45 @@ test('R2StorageDriver: Lanza error claro de "no implementado" y bloquea selecci�
     }
 });
 
-test('getStorageDriver y aislamiento: solo carpetas temporales (mkdtemp) y nunca carpetas reales', async (t) => {
+test('LocalStorageDriver: Falla de verdad cuando no recibe carpeta explícita estando en NODE_ENV=test', () => {
+    assert.equal(process.env.NODE_ENV, 'test', 'El entorno de pruebas debe tener NODE_ENV=test activo de antemano');
+
+    const invalidCalls = [
+        () => new LocalStorageDriver(),
+        () => new LocalStorageDriver(null),
+        () => new LocalStorageDriver({}),
+        () => new LocalStorageDriver({ baseDir: '' }),
+        () => new LocalStorageDriver({ baseDir: '   ' }),
+        () => getStorageDriver('local'),
+        () => getStorageDriver('local', {})
+    ];
+
+    for (const invoke of invalidCalls) {
+        assert.throws(
+            invoke,
+            (err) => {
+                assert.equal(err.code, 'ERR_TEST_STORAGE_REQUIRES_BASEDIR');
+                assert.match(err.message, /baseDir.*NODE_ENV=test/i);
+                return true;
+            },
+            'LocalStorageDriver debe fallar cuando falta options.baseDir en NODE_ENV=test'
+        );
+    }
+
+    // También debe rechazar apuntar explícitamente a las carpetas reales del proyecto durante NODE_ENV=test
+    for (const realDir of [REAL_PROTECTED_DIRS.originals, REAL_PROTECTED_DIRS.previews, REAL_PROTECTED_DIRS.thumbs]) {
+        assert.throws(
+            () => new LocalStorageDriver({ baseDir: realDir }),
+            (err) => {
+                assert.equal(err.code, 'ERR_TEST_STORAGE_FORBIDDEN_REAL_DIR');
+                return true;
+            },
+            `LocalStorageDriver debe rechazar apuntar a carpeta real en NODE_ENV=test: ${realDir}`
+        );
+    }
+});
+
+test('getStorageDriver: Factory selector de drivers', async (t) => {
     const tmpFactoryDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nt-factory-test-'));
     t.after(() => {
         try {
@@ -275,23 +361,6 @@ test('getStorageDriver y aislamiento: solo carpetas temporales (mkdtemp) y nunca
     const local = getStorageDriver('local', { baseDir: tmpFactoryDir });
     assert.ok(local instanceof LocalStorageDriver, 'Debe devolver instancia de LocalStorageDriver');
 
-    // En NODE_ENV=test sin baseDir explícito debe rechazar instanciación para proteger storage/originals real
-    const prevNodeEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'test';
-    try {
-        assert.throws(
-            () => new LocalStorageDriver({}),
-            /baseDir.*NODE_ENV=test/i,
-            'Debe exigir baseDir temporal explícito cuando NODE_ENV=test'
-        );
-    } finally {
-        if (prevNodeEnv === undefined) {
-            delete process.env.NODE_ENV;
-        } else {
-            process.env.NODE_ENV = prevNodeEnv;
-        }
-    }
-
     const r2 = getStorageDriver('r2', {});
     assert.ok(r2 instanceof R2StorageDriver, 'Debe devolver instancia de R2StorageDriver en entorno no productivo');
 
@@ -300,28 +369,9 @@ test('getStorageDriver y aislamiento: solo carpetas temporales (mkdtemp) y nunca
         /no soportado|driver desconocido/i,
         'Debe lanzar error para drivers no soportados'
     );
-
-    // Verificar que storage/originals y frontend/uploads reales no recibieron archivos de prueba
-    const realOriginalsDir = path.join(__dirname, '..', 'storage', 'originals');
-    if (fs.existsSync(realOriginalsDir)) {
-        const entries = fs.readdirSync(realOriginalsDir);
-        assert.deepEqual(entries, ['.gitkeep'], 'storage/originals debe contener únicamente .gitkeep');
-    }
-
-    const realPreviewsDir = path.join(__dirname, '..', 'frontend', 'uploads', 'previews');
-    if (fs.existsSync(realPreviewsDir)) {
-        const entries = fs.readdirSync(realPreviewsDir);
-        assert.deepEqual(entries, ['.gitkeep'], 'frontend/uploads/previews debe contener únicamente .gitkeep');
-    }
-
-    const realThumbsDir = path.join(__dirname, '..', 'frontend', 'uploads', 'thumbs');
-    if (fs.existsSync(realThumbsDir)) {
-        const entries = fs.readdirSync(realThumbsDir);
-        assert.deepEqual(entries, ['.gitkeep'], 'frontend/uploads/thumbs debe contener únicamente .gitkeep');
-    }
 });
 
-test('Migración 004: Sintaxis MariaDB 10.11, nota D1/SQLite y columnas requeridas (incluido mime_type)', async (t) => {
+test('Migración 004: Sintaxis MariaDB 10.11, nota D1/SQLite y columnas requeridas (incluido mime_type)', async () => {
     const migrationPath = path.join(__dirname, '..', 'database', 'migrations', '004_storage_and_orders.sql');
     assert.ok(fs.existsSync(migrationPath), 'El archivo de migración 004 debe existir');
 
@@ -368,5 +418,25 @@ test('Migración 004: Sintaxis MariaDB 10.11, nota D1/SQLite y columnas requerid
     assert.ok(
         sqlContent.toLowerCase().includes('last_downloaded_at'),
         "Migración 004 debe definir columna 'last_downloaded_at' en order_items"
+    );
+});
+
+test('Aislamiento de carpetas reales: listado antes y después de ejecutar la suite coincide intacto', () => {
+    const finalSnapshot = captureProtectedDirsSnapshot();
+
+    assert.deepEqual(
+        finalSnapshot.originals,
+        initialProtectedDirsSnapshot.originals,
+        'storage/originals no debe sufrir altas, bajas ni modificaciones durante la suite de pruebas'
+    );
+    assert.deepEqual(
+        finalSnapshot.previews,
+        initialProtectedDirsSnapshot.previews,
+        'frontend/uploads/previews no debe sufrir altas, bajas ni modificaciones durante la suite de pruebas'
+    );
+    assert.deepEqual(
+        finalSnapshot.thumbs,
+        initialProtectedDirsSnapshot.thumbs,
+        'frontend/uploads/thumbs no debe sufrir altas, bajas ni modificaciones durante la suite de pruebas'
     );
 });
