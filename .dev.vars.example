@@ -1,0 +1,13 @@
+# Plantilla de secretos locales para Cloudflare Workers (wrangler dev)
+# Copia este archivo a .dev.vars (ignorado por .gitignore) SOLO para desarrollo local.
+# NUNCA subas valores reales a Git ni los coloques en wrangler.toml.
+# En entornos remotos (staging / produccion), carga cada secreto manualmente con:
+#   npx wrangler secret put AUTH_PEPPER --env staging
+#   npx wrangler secret put MERCADOPAGO_ACCESS_TOKEN --env staging
+#   npx wrangler secret put MERCADOPAGO_WEBHOOK_SECRET --env staging
+#   npx wrangler secret put TURNSTILE_SECRET_KEY --env staging
+
+AUTH_PEPPER=CAMBIAR_EN_LOCAL_SECRETO_ALEATORIO_MIN_32_BYTES
+MERCADOPAGO_ACCESS_TOKEN=CAMBIAR_EN_LOCAL_CREDENCIAL_PRUEBA_MP
+MERCADOPAGO_WEBHOOK_SECRET=CAMBIAR_EN_LOCAL_WEBHOOK_SECRET_PRUEBA_MP
+TURNSTILE_SECRET_KEY=CAMBIAR_EN_LOCAL_TURNSTILE_SECRET_KEY
